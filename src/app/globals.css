@@ -1,0 +1,130 @@
+@import "tailwindcss";
+
+@theme {
+  --color-crimson: #C7230F;
+  --color-crimson-dark: #A31C0C;
+  --color-crimson-darker: #7A1408;
+  --color-offwhite: #FFFFEF;
+  --color-offwhite-card: #FFFDF2;
+  --color-offwhite-border: #EBEBCE;
+}
+
+/* ── Crimson & Off-White 2-Color Design System ── */
+:root {
+  --crimson:          #C7230F;
+  --crimson-dark:     #A31C0C;
+  --crimson-darker:   #7A1408;
+  --crimson-light:    #A51C1C;
+  --offwhite:         #FFFFEF;
+  --offwhite-card:    #FFFDF2;
+  --offwhite-border:  #EBEBCE;
+  --white:            #FFFFFF;
+  --font-sans:        'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-serif:       'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Contrast Utility Classes */
+.bg-crimson { background-color: #C7230F !important; }
+.bg-crimson-dark { background-color: #A31C0C !important; }
+.text-crimson { color: #C7230F !important; }
+
+.bg-offwhite { background-color: #FFFFEF !important; }
+.text-offwhite { color: #FFFFEF !important; }
+
+/* Custom Arbitrary Class Overrides for Tailwind v4 compatibility */
+.bg-\[\#C7230F\] { background-color: #C7230F !important; }
+.bg-\[\#A31C0C\] { background-color: #A31C0C !important; }
+.bg-\[\#FFFFEF\] { background-color: #FFFFEF !important; }
+.text-\[\#C7230F\] { color: #C7230F !important; }
+.text-\[\#FFFFEF\] { color: #FFFFEF !important; }
+.border-\[\#C7230F\] { border-color: #C7230F !important; }
+.border-\[\#FFFFEF\] { border-color: #FFFFEF !important; }
+
+
+/* ── Global Reset & Font Enforcement ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  max-width: 100vw;
+  overflow-x: hidden;
+  width: 100%;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  background-color: #FFFFEF !important;
+  color: #C7230F;
+  -webkit-font-smoothing: antialiased;
+  max-width: 100vw;
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, select, textarea {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+}
+
+img { max-width: 100%; display: block; }
+a { text-decoration: none; }
+
+/* ── Container ── */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+@media (min-width: 768px) {
+  .container {
+    padding: 0 2.5rem;
+  }
+}
+
+/* ── Responsive Grids ── */
+.responsive-grid-4 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 640px) {
+  .responsive-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  .responsive-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2.5rem;
+  }
+}
+
+.responsive-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+@media (min-width: 768px) {
+  .responsive-grid-2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 3.5rem;
+  }
+}
+
+/* ── Skeleton ── */
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #EBEBCE 25%, #FFFFEF 50%, #EBEBCE 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* ── Scrollbar hide ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
