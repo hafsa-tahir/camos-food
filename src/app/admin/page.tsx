@@ -409,7 +409,7 @@ export default function AdminDashboardPage() {
                 required
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
-                placeholder="ORGANIC;CHEMISTRY6969"
+                placeholder="••••••••••••••••"
                 style={{ backgroundColor: '#FFFFEF', color: '#C7230F', borderColor: 'rgba(199,35,15,0.3)' }}
                 className="w-full p-3.5 rounded-xl border-2 font-mono font-black text-sm outline-none"
               />
