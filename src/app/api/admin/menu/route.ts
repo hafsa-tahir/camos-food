@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status')
 
-  let query = supabase.from('food_items').select('*, customers(name, email)').order('sort_order')
+  let query = supabase.from('food_items').select('*').order('sort_order')
 
   if (status) query = query.eq('status', status)
 
