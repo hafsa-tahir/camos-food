@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Package, Clock, CheckCircle, XCircle, Truck, User, Scale, Flame, Activity, TrendingDown, Target, Save, LogOut } from 'lucide-react'
+import { Package, Clock, CheckCircle, XCircle, Truck, User, Scale, Flame, Activity, TrendingDown, Target, Save, LogOut, Sparkles, Zap, ShieldCheck, Info } from 'lucide-react'
 import { Order } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
@@ -169,6 +169,38 @@ export default function AccountOrdersPage() {
                   <p className="text-xs font-bold text-[#C7230F]/70">
                     Track your height, weight, and fitness targets for tailored meal recommendations.
                   </p>
+                </div>
+              </div>
+
+              {/* WHY WE COLLECT YOUR HEALTH DETAILS NOTICE BANNER */}
+              <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/30 rounded-2xl p-5 mb-6 shadow-xs relative">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#C7230F] text-[#FFFFEF] flex items-center justify-center shrink-0 mt-0.5 shadow-md">
+                    <Sparkles size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <span className="font-black text-xs sm:text-sm text-[#C7230F] uppercase tracking-wider">
+                        Why We Collect Your Health Details
+                      </span>
+                      <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                        ✦ CAMO'S PRO COMING SOON
+                      </span>
+                    </div>
+                    <p className="text-xs font-medium text-[#C7230F]/90 leading-relaxed mb-3">
+                      We collect your height, weight, age, activity level, and fitness goals to accurately calculate your daily caloric & macronutrient targets.
+                    </p>
+
+                    <div className="bg-white border border-[#C7230F]/20 rounded-xl p-3 flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2 text-xs font-black text-[#C7230F]">
+                        <Zap size={14} className="text-[#C7230F] shrink-0" />
+                        <span>Automated Menu Recommendations:</span>
+                      </div>
+                      <p className="text-[11px] font-semibold text-[#C7230F]/80 leading-normal pl-5">
+                        We are upgrading our application to <strong>Camo's PRO</strong>! Soon, our system will automatically recommend specific dishes from our menu tailored to fulfill your exact health requirements & daily calorie budget with zero guesswork.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 

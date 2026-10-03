@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Target, TrendingDown, Activity, ArrowRight, CheckCircle, Flame } from 'lucide-react'
+import { Target, TrendingDown, Activity, ArrowRight, CheckCircle, Flame, Sparkles, Zap } from 'lucide-react'
 import Link from 'next/link'
 
 const GOALS = [
@@ -64,9 +64,41 @@ export default function DietPage() {
         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#C7230F] mb-2">
           AI Diet Coach
         </h1>
-        <p className="text-sm font-bold text-[#C7230F]/80 mb-8">
+        <p className="text-sm font-bold text-[#C7230F]/80 mb-6">
           Calculate your optimal daily calorie and macro target.
         </p>
+
+        {/* WHY WE COLLECT YOUR HEALTH DETAILS NOTICE BANNER */}
+        <div className="bg-white border-2 border-[#C7230F]/25 rounded-3xl p-5 sm:p-6 mb-8 shadow-xs">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#C7230F] text-[#FFFFEF] flex items-center justify-center shrink-0 shadow-md">
+              <Sparkles size={20} />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="font-black text-sm text-[#C7230F] uppercase tracking-wider">
+                  Why We Collect Your Health Details
+                </span>
+                <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                  ✦ CAMO'S PRO COMING SOON
+                </span>
+              </div>
+              <p className="text-xs font-semibold text-[#C7230F]/90 leading-relaxed mb-3">
+                We collect your height, weight, age, activity level, and fitness goals to calculate your personalized daily caloric & macronutrient targets.
+              </p>
+
+              <div className="bg-[#FFFFEF] border border-[#C7230F]/20 rounded-2xl p-3.5 flex flex-col gap-1.5">
+                <div className="flex items-center gap-2 text-xs font-black text-[#C7230F]">
+                  <Zap size={14} className="text-[#C7230F] shrink-0" />
+                  <span>Automated Pro Recommendations:</span>
+                </div>
+                <p className="text-[11px] font-semibold text-[#C7230F]/80 leading-normal pl-5">
+                  Soon with <strong>Camo's PRO</strong>, our smart recommendation engine will automatically highlight menu items that fulfill your health requirements & fit perfectly into your daily calorie budget.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Step Indicator */}
         <div className="flex gap-2 mb-8">
