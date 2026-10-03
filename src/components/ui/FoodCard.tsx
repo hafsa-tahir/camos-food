@@ -50,15 +50,23 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
         {/* Media Container */}
         <div className="relative h-[270px] bg-[#FFFFEF] rounded-3xl border border-[#C7230F]/15 overflow-hidden flex flex-col justify-between p-3.5 box-border">
           {/* Top Badges */}
-          <div className="flex items-center gap-2 z-10">
-            {discount && discount > 0 ? (
-              <span className="bg-[#C7230F] text-[#FFFFEF] text-xs font-black px-3.5 py-1.5 rounded-xl tracking-wide">
-                - {discount}%
+          <div className="flex items-center gap-2 z-10 justify-between w-full">
+            <div className="flex items-center gap-2">
+              {discount && discount > 0 ? (
+                <span className="bg-[#C7230F] text-[#FFFFEF] text-xs font-black px-3.5 py-1.5 rounded-xl tracking-wide">
+                  - {discount}%
+                </span>
+              ) : null}
+              <span className="bg-[#FFFFEF] text-[#C7230F] text-xs font-extrabold px-3.5 py-1.5 rounded-xl border border-[#C7230F]/20 shadow-xs capitalize">
+                {item.category || 'Special'}
               </span>
-            ) : null}
-            <span className="bg-[#FFFFEF] text-[#C7230F] text-xs font-extrabold px-3.5 py-1.5 rounded-xl border border-[#C7230F]/20 shadow-xs capitalize">
-              {item.category || 'Special'}
-            </span>
+            </div>
+
+            {item.status === 'inactive' && (
+              <span className="bg-red-700 text-white font-black text-[10px] px-3 py-1.5 rounded-xl uppercase tracking-wider shadow-md z-20">
+                OUT OF STOCK
+              </span>
+            )}
           </div>
 
           {/* Image */}
@@ -69,13 +77,21 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
                   src={item.image_url}
                   alt={item.name}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  className={`object-cover group-hover:scale-105 transition-transform duration-500 ${item.status === 'inactive' ? 'grayscale opacity-60' : ''}`}
                   unoptimized
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/30 pointer-events-none" />
               </>
             ) : (
               <div className="flex items-center justify-center h-full text-[#C7230F] font-bold">Camo Foods</div>
+            )}
+
+            {item.status === 'inactive' && (
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
+                <span className="bg-red-600 text-white font-black text-xs px-4 py-2 rounded-full uppercase tracking-widest border border-white/40 shadow-xl">
+                  OUT OF STOCK
+                </span>
+              </div>
             )}
           </div>
 
@@ -93,7 +109,18 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
               />
             </button>
 
-            {qty === 0 ? (
+            {item.status === 'inactive' ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  toast.error(`"${item.name}" is currently OUT OF STOCK.`)
+                }}
+                className="h-11 px-4 bg-gray-400 text-white font-black text-[11px] rounded-2xl border-none cursor-not-allowed uppercase tracking-wider"
+              >
+                OUT OF STOCK
+              </button>
+            ) : qty === 0 ? (
               <button
                 onClick={add}
                 aria-label="Add to cart"

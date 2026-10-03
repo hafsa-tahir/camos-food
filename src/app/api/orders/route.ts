@@ -47,72 +47,94 @@ export async function POST(request: NextRequest) {
       console.warn('DB food_items fetch warning:', e)
     }
 
-    const foodItems: any[] = itemIds
-      .map((id) => {
-        // 1. Direct DB ID match
-        const dbMatch = dbFoodItems.find((f) => f.id === id)
-        if (dbMatch) return dbMatch
-
-        // 2. Direct DB Name match (case-insensitive)
-        const dbNameMatch = dbFoodItems.find((f) => f.name.toLowerCase() === id.toLowerCase())
-        if (dbNameMatch) return dbNameMatch
-
-        // 3. Local menuData match by ID or Name
-        const realMatch = REAL_MENU_ITEMS.find(
-          (f) => f.id === id || f.name.toLowerCase() === id.toLowerCase() || id.toLowerCase().includes(f.name.toLowerCase())
-        )
-        if (realMatch) return realMatch
-
-        // 4. Weekly Subscription Package match
-        if (
-          id.startsWith('sub_') ||
-          id.startsWith('subscription') ||
-          id.includes('weekly') ||
-          id.includes('package') ||
-          id.includes('diet') ||
-          id.includes('desi')
-        ) {
-          let packageTitle = 'Weekly Subscription Package'
-          let packagePrice = 3750
-
-          if (id.includes('diet_5')) { packageTitle = '5-Day Diet Plan'; packagePrice = 3550; }
-          else if (id.includes('diet_7')) { packageTitle = '7-Day Diet Plan'; packagePrice = 5250; }
-          else if (id.includes('desi_5')) { packageTitle = '5-Day Desi Plan'; packagePrice = 2800; }
-          else if (id.includes('desi_7_beef')) { packageTitle = 'Desi 7-Day Package (Beef Qeema)'; packagePrice = 3900; }
-          else if (id.includes('desi_7_chicken')) { packageTitle = 'Desi 7-Day Package (Chicken Qeema)'; packagePrice = 3750; }
-          else if (id.includes('chinese_7')) { packageTitle = 'Chinese 7-Day Package'; packagePrice = 4200; }
-          else if (id.includes('fast_food_7')) { packageTitle = 'Fast Food 7-Day Package'; packagePrice = 4500; }
-          else if (id.includes('weight_loss_7')) { packageTitle = 'Weight Loss 7-Day Package'; packagePrice = 3950; }
-
-          return {
-            id,
-            name: packageTitle,
-            price: packagePrice,
-            calories: 550,
-            category: 'subscription',
-            status: 'active',
-          }
+    const foodItems: any[] = []
+    for (const id of itemIds) {
+      // 1. Direct DB ID match
+      const dbMatch = dbFoodItems.find((f) => f.id === id)
+      if (dbMatch) {
+        if (dbMatch.status !== 'active') {
+          return NextResponse.json(
+            { error: `"${dbMatch.name}" is currently OUT OF STOCK. Please remove it from your cart to proceed.` },
+            { status: 400 }
+          )
         }
+        foodItems.push(dbMatch)
+        continue
+      }
 
-        // 5. Ultimate Fallback for active products
-        if (dbFoodItems.length > 0) {
-          const activeFallback = dbFoodItems.find(f => f.status === 'active') || dbFoodItems[0]
-          return {
+      // 2. Direct DB Name match (case-insensitive)
+      const dbNameMatch = dbFoodItems.find((f) => f.name.toLowerCase() === id.toLowerCase())
+      if (dbNameMatch) {
+        if (dbNameMatch.status !== 'active') {
+          return NextResponse.json(
+            { error: `"${dbNameMatch.name}" is currently OUT OF STOCK. Please remove it from your cart to proceed.` },
+            { status: 400 }
+          )
+        }
+        foodItems.push(dbNameMatch)
+        continue
+      }
+
+      // 3. Local menuData match by ID or Name
+      const realMatch = REAL_MENU_ITEMS.find(
+        (f) => f.id === id || f.name.toLowerCase() === id.toLowerCase() || id.toLowerCase().includes(f.name.toLowerCase())
+      )
+      if (realMatch) {
+        foodItems.push(realMatch)
+        continue
+      }
+
+      // 4. Weekly Subscription Package match
+      if (
+        id.startsWith('sub_') ||
+        id.startsWith('subscription') ||
+        id.includes('weekly') ||
+        id.includes('package') ||
+        id.includes('diet') ||
+        id.includes('desi')
+      ) {
+        let packageTitle = 'Weekly Subscription Package'
+        let packagePrice = 3750
+
+        if (id.includes('diet_5')) { packageTitle = '5-Day Diet Plan'; packagePrice = 3550; }
+        else if (id.includes('diet_7')) { packageTitle = '7-Day Diet Plan'; packagePrice = 5250; }
+        else if (id.includes('desi_5')) { packageTitle = '5-Day Desi Plan'; packagePrice = 2800; }
+        else if (id.includes('desi_7_beef')) { packageTitle = 'Desi 7-Day Package (Beef Qeema)'; packagePrice = 3900; }
+        else if (id.includes('desi_7_chicken')) { packageTitle = 'Desi 7-Day Package (Chicken Qeema)'; packagePrice = 3750; }
+        else if (id.includes('chinese_7')) { packageTitle = 'Chinese 7-Day Package'; packagePrice = 4200; }
+        else if (id.includes('fast_food_7')) { packageTitle = 'Fast Food 7-Day Package'; packagePrice = 4500; }
+        else if (id.includes('weight_loss_7')) { packageTitle = 'Weight Loss 7-Day Package'; packagePrice = 3950; }
+
+        foodItems.push({
+          id,
+          name: packageTitle,
+          price: packagePrice,
+          calories: 550,
+          category: 'subscription',
+          status: 'active',
+        })
+        continue
+      }
+
+      // 5. Active Fallback Product
+      if (dbFoodItems.length > 0) {
+        const activeFallback = dbFoodItems.find(f => f.status === 'active')
+        if (activeFallback) {
+          foodItems.push({
             id: activeFallback.id,
             name: activeFallback.name,
             price: activeFallback.price,
             calories: activeFallback.calories || 500,
             category: activeFallback.category || 'main',
             status: 'active'
-          }
+          })
+          continue
         }
-
-        return null
-      })
-      .filter(Boolean)
+      }
+    }
 
     if (foodItems.length !== itemIds.length) {
-      return NextResponse.json({ error: 'Some items are unavailable' }, { status: 400 })
+      return NextResponse.json({ error: 'Some items in your cart are unavailable or out of stock.' }, { status: 400 })
     }
 
     // Calculate subtotal
