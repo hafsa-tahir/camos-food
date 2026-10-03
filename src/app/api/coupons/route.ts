@@ -12,11 +12,22 @@ export async function GET(request: NextRequest) {
     }
 
     const serviceClient = await createServiceClient()
+
+    let ownerIds: string[] = [user.id]
+    if (user.email) {
+      const { data: matchedCust } = await serviceClient
+        .from('customers')
+        .select('id')
+        .eq('email', user.email)
+      if (matchedCust && matchedCust.length > 0) {
+        ownerIds = Array.from(new Set([...ownerIds, ...matchedCust.map((c) => c.id)]))
+      }
+    }
+
     const { data: coupons } = await serviceClient
       .from('coupons')
       .select('*')
-      .eq('owner_id', user.id)
-      .eq('is_active', true)
+      .in('owner_id', ownerIds)
       .order('created_at', { ascending: false })
 
     if (coupons && coupons.length > 0) {
