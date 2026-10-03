@@ -55,22 +55,6 @@ export async function POST(request: NextRequest) {
       : 10
     const discountAmount = Math.round((subtotal * discountPercent) / 100)
 
-    // 6. IMMEDIATELY EXPIRE & MARK SINGLE-USE COUPON AS REDEEMED IN SUPABASE DB UPON APPLYING
-    const { data: updatedCoupon, error: updateErr } = await serviceClient
-      .from('coupons')
-      .update({
-        times_used: 1,
-        is_active: false,
-      })
-      .eq('id', coupon.id)
-      .select()
-
-    if (updateErr) {
-      console.error('Failed to expire coupon in DB:', updateErr)
-    } else {
-      console.log('Successfully expired coupon in DB:', updatedCoupon)
-    }
-
     return NextResponse.json({
       data: {
         coupon_id: coupon.id,

@@ -168,8 +168,18 @@ export async function POST(request: NextRequest) {
     discountAmount = Math.min(discountAmount, subtotal)
     const total = subtotal - discountAmount
 
-    // Create order in DB
-    const { data: order, error: orderError } = await supabase
+    // Ensure customer profile exists in customers table satisfied
+    const { data: existingCust } = await serviceClient.from('customers').select('id').eq('id', user.id).maybeSingle()
+    if (!existingCust) {
+      await serviceClient.from('customers').upsert({
+        id: user.id,
+        name: user.user_metadata?.name || user.email?.split('@')[0] || 'Customer',
+        email: user.email || 'customer@camosfoods.com',
+      })
+    }
+
+    // Create order in DB using serviceClient (bypasses RLS)
+    const { data: order, error: orderError } = await serviceClient
       .from('orders')
       .insert({
         customer_id: user.id,
@@ -186,7 +196,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (orderError || !order) {
-      return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
+      console.error('Order creation error:', orderError)
+      return NextResponse.json({ error: orderError?.message || 'Failed to create order' }, { status: 500 })
     }
 
     // Fetch all DB food items so non-UUID food_item_ids map cleanly to a DB food_items UUID
