@@ -4,13 +4,33 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, Heart, ShoppingBag, Plus, Minus, Flame, Beef, Wheat, Droplets, Clock, Truck, ShieldCheck, UtensilsCrossed } from 'lucide-react'
+import {
+  ArrowLeft,
+  Heart,
+  ShoppingBag,
+  Plus,
+  Minus,
+  Flame,
+  Beef,
+  Wheat,
+  Droplets,
+  Clock,
+  Truck,
+  ShieldCheck,
+  UtensilsCrossed,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+  Scale,
+  ChefHat,
+  Apple
+} from 'lucide-react'
 import { FoodItem } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 import { useCartStore } from '@/store/cartStore'
 import { useFavoritesStore } from '@/store/favoritesStore'
 import { toast } from 'sonner'
-import { REAL_MENU_ITEMS } from '@/lib/menuData'
+import { REAL_MENU_ITEMS, enrichFoodItem } from '@/lib/menuData'
 
 export default function ProductPage() {
   const params = useParams()
@@ -28,27 +48,31 @@ export default function ProductPage() {
   const toggleFav = useFavoritesStore((s) => s.toggleFavorite)
   const isFav = useFavoritesStore((s) => s.isFavorite(id))
 
-  const cartItem = cartItems.find((i) => i.food_item.id === id)
+  const cartItem = cartItems.find((i) => i.food_item.id === item?.id || i.food_item.id === id)
   const qty = cartItem?.quantity || 0
 
   useEffect(() => {
-    const local = REAL_MENU_ITEMS.find((i) => i.id === id)
+    // Try matching local item baseline
+    const local = REAL_MENU_ITEMS.find((i) => i.id === id || i.name.toLowerCase() === id.toLowerCase())
     if (local) {
-      setItem(local)
-      if (local.variants && local.variants.length > 0) {
-        setSelectedVariant(local.variants[0].name)
+      const enriched = enrichFoodItem(local)
+      setItem(enriched)
+      if (enriched.variants && enriched.variants.length > 0) {
+        setSelectedVariant(enriched.variants[0].name)
       }
       setLoading(false)
       return
     }
 
+    // Fetch from API
     fetch(`/api/menu/${id}`)
       .then((r) => r.json())
       .then(({ data }) => {
         if (data) {
-          setItem(data)
-          if (data.variants && data.variants.length > 0) {
-            setSelectedVariant(data.variants[0].name)
+          const enriched = enrichFoodItem(data)
+          setItem(enriched)
+          if (enriched.variants && enriched.variants.length > 0) {
+            setSelectedVariant(enriched.variants[0].name)
           }
         }
       })
@@ -81,12 +105,13 @@ export default function ProductPage() {
     )
   }
 
+  // Calculate detailed macro stats
   const originalPrice = Math.round(item.price * 1.25)
   const discountPercent = 20
   const totalMacros = item.protein_g + item.carbs_g + item.fat_g
-  const proteinPct = totalMacros > 0 ? Math.round((item.protein_g / totalMacros) * 100) : 0
-  const carbsPct = totalMacros > 0 ? Math.round((item.carbs_g / totalMacros) * 100) : 0
-  const fatPct = totalMacros > 0 ? Math.round((item.fat_g / totalMacros) * 100) : 0
+  const proteinPct = totalMacros > 0 ? Math.round((item.protein_g / totalMacros) * 100) : 30
+  const carbsPct = totalMacros > 0 ? Math.round((item.carbs_g / totalMacros) * 100) : 50
+  const fatPct = totalMacros > 0 ? Math.round((item.fat_g / totalMacros) * 100) : 20
 
   const add = () => {
     addItem(item)
@@ -104,9 +129,9 @@ export default function ProductPage() {
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 bg-white border-2 border-[#C7230F]/20 rounded-full px-5 py-2.5 cursor-pointer font-black text-xs sm:text-sm text-[#C7230F] hover:border-[#C7230F] transition-all"
+            className="inline-flex items-center gap-2 bg-white border-2 border-[#C7230F]/20 rounded-full px-5 py-2.5 cursor-pointer font-black text-xs sm:text-sm text-[#C7230F] hover:border-[#C7230F] transition-all shadow-xs"
           >
-            <ArrowLeft size={16} /> Back
+            <ArrowLeft size={16} /> Back to Menu
           </button>
         </div>
 
@@ -131,10 +156,10 @@ export default function ProductPage() {
 
             {/* Badges */}
             <div className="absolute top-4 left-4 flex gap-2 z-10">
-              <span className="bg-[#C7230F] text-[#FFFFEF] text-xs font-black px-3.5 py-1.5 rounded-xl">
-                -{discountPercent}%
+              <span className="bg-[#C7230F] text-[#FFFFEF] text-xs font-black px-3.5 py-1.5 rounded-xl shadow-sm">
+                -{discountPercent}% OFF
               </span>
-              <span className="bg-[#FFFFEF] text-[#C7230F] text-xs font-black px-3.5 py-1.5 rounded-xl border border-[#C7230F]/20 capitalize">
+              <span className="bg-[#FFFFEF] text-[#C7230F] text-xs font-black px-3.5 py-1.5 rounded-xl border border-[#C7230F]/20 capitalize shadow-sm">
                 {item.category}
               </span>
             </div>
@@ -161,11 +186,11 @@ export default function ProductPage() {
           {/* Right: Product Info */}
           <div className="flex flex-col gap-5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-black text-[#C7230F] tracking-widest uppercase">
-                CAMO'S · {item.category}
+              <span className="text-xs font-black text-[#C7230F] tracking-widest uppercase flex items-center gap-1.5">
+                <Sparkles size={14} /> CAMO'S KITCHEN · {item.category}
               </span>
               {item.tags && item.tags.length > 0 && (
-                <span className="text-[11px] font-extrabold text-[#C7230F] bg-white border border-[#C7230F]/20 px-3 py-1 rounded-md">
+                <span className="text-[11px] font-extrabold text-[#C7230F] bg-white border border-[#C7230F]/20 px-3 py-1 rounded-md uppercase tracking-wider">
                   ✦ {item.tags[0]}
                 </span>
               )}
@@ -176,7 +201,7 @@ export default function ProductPage() {
             </h1>
 
             {item.description && (
-              <p className="text-sm sm:text-base text-[#C7230F]/80 leading-relaxed font-medium">
+              <p className="text-sm sm:text-base text-[#C7230F]/85 leading-relaxed font-medium">
                 {item.description}
               </p>
             )}
@@ -229,7 +254,7 @@ export default function ProductPage() {
                   <ShoppingBag size={18} /> Add to Cart
                 </button>
               ) : (
-                <div className="h-12 bg-[#C7230F] rounded-full px-3 flex items-center gap-3">
+                <div className="h-12 bg-[#C7230F] rounded-full px-3 flex items-center gap-3 shadow-md">
                   <button
                     onClick={() => updateQty(item.id, qty - 1)}
                     className="w-7 h-7 bg-white/20 hover:bg-white/30 rounded-full text-[#FFFFEF] flex items-center justify-center border-none cursor-pointer"
@@ -252,9 +277,9 @@ export default function ProductPage() {
             {/* Features Row */}
             <div className="grid grid-cols-3 gap-3 mt-4">
               {[
-                { icon: ShieldCheck, label: '100% Halal', sub: 'Verified' },
-                { icon: Clock, label: 'Fresh Daily', sub: 'Slow Cooked' },
-                { icon: Truck, label: 'Fast Delivery', sub: 'Under 45 min' },
+                { icon: ShieldCheck, label: '100% Halal', sub: 'Certified' },
+                { icon: Clock, label: 'Fresh Daily', sub: 'Cooked to Order' },
+                { icon: Truck, label: 'Fast Delivery', sub: 'Under 45 Mins' },
               ].map((f) => (
                 <div
                   key={f.label}
@@ -269,39 +294,129 @@ export default function ProductPage() {
           </div>
         </div>
 
-        {/* Nutrition Section */}
-        <div className="bg-white rounded-3xl border-2 border-[#C7230F]/20 p-6 sm:p-10 mb-12 shadow-sm">
-          <h2 className="text-xl sm:text-2xl font-black text-[#C7230F] mb-6">
-            Nutrition & Macros
-          </h2>
-
-          <div className="flex items-center gap-4 bg-[#C7230F]/10 border border-[#C7230F]/20 rounded-2xl p-5 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-[#C7230F] flex items-center justify-center text-[#FFFFEF]">
-              <Flame size={24} />
-            </div>
+        {/* Nutrition & Macro Breakdown Section */}
+        <div className="bg-white rounded-3xl border-2 border-[#C7230F]/20 p-6 sm:p-10 mb-10 shadow-xs">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
-              <div className="text-2xl font-black text-[#C7230F]">{item.calories} kcal</div>
-              <div className="text-xs font-bold text-[#C7230F]/70">Energy per serving</div>
+              <div className="text-xs font-black text-[#C7230F] uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <Apple size={16} /> DIETITIAN APPROVED NUTRITION
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-[#C7230F]">
+                Nutrition & Macros
+              </h2>
+            </div>
+
+            <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/20 px-4 py-2 rounded-2xl flex items-center gap-2 text-xs font-black text-[#C7230F]">
+              <Scale size={16} />
+              <span>Portion: {item.serving_size || '1 Serving (approx 400g)'}</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/20 rounded-2xl p-4 text-center">
-              <Beef size={22} className="text-[#C7230F] mx-auto mb-2" />
-              <div className="text-xl font-black text-[#C7230F]">{item.protein_g}g</div>
-              <div className="text-xs font-black text-[#C7230F]/70 uppercase tracking-wider">PROTEIN</div>
+          {/* Energy Banner */}
+          <div className="flex items-center gap-4 bg-[#C7230F]/10 border-2 border-[#C7230F]/20 rounded-2xl p-5 mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-[#C7230F] flex items-center justify-center text-[#FFFFEF] shrink-0 shadow-md">
+              <Flame size={28} />
+            </div>
+            <div>
+              <div className="text-3xl font-black text-[#C7230F]">{item.calories} kcal</div>
+              <div className="text-xs font-bold text-[#C7230F]/80">Total Energy per serving</div>
+            </div>
+          </div>
+
+          {/* Macro Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            {/* Protein */}
+            <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/20 rounded-2xl p-5 text-center flex flex-col justify-between">
+              <div>
+                <Beef size={26} className="text-[#C7230F] mx-auto mb-2" />
+                <div className="text-3xl font-black text-[#C7230F] mb-1">{item.protein_g}g</div>
+                <div className="text-xs font-black text-[#C7230F] uppercase tracking-wider mb-3">PROTEIN</div>
+              </div>
+              <div>
+                <div className="w-full bg-[#C7230F]/15 rounded-full h-2.5 overflow-hidden mb-1.5">
+                  <div className="bg-[#C7230F] h-full rounded-full" style={{ width: `${proteinPct}%` }} />
+                </div>
+                <div className="text-[11px] font-extrabold text-[#C7230F]/70">{proteinPct}% of macro profile</div>
+              </div>
             </div>
 
-            <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/20 rounded-2xl p-4 text-center">
-              <Wheat size={22} className="text-[#C7230F] mx-auto mb-2" />
-              <div className="text-xl font-black text-[#C7230F]">{item.carbs_g}g</div>
-              <div className="text-xs font-black text-[#C7230F]/70 uppercase tracking-wider">CARBS</div>
+            {/* Carbs */}
+            <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/20 rounded-2xl p-5 text-center flex flex-col justify-between">
+              <div>
+                <Wheat size={26} className="text-[#C7230F] mx-auto mb-2" />
+                <div className="text-3xl font-black text-[#C7230F] mb-1">{item.carbs_g}g</div>
+                <div className="text-xs font-black text-[#C7230F] uppercase tracking-wider mb-3">CARBOHYDRATES</div>
+              </div>
+              <div>
+                <div className="w-full bg-[#C7230F]/15 rounded-full h-2.5 overflow-hidden mb-1.5">
+                  <div className="bg-[#C7230F] h-full rounded-full" style={{ width: `${carbsPct}%` }} />
+                </div>
+                <div className="text-[11px] font-extrabold text-[#C7230F]/70">{carbsPct}% of macro profile</div>
+              </div>
             </div>
 
-            <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/20 rounded-2xl p-4 text-center">
-              <Droplets size={22} className="text-[#C7230F] mx-auto mb-2" />
-              <div className="text-xl font-black text-[#C7230F]">{item.fat_g}g</div>
-              <div className="text-xs font-black text-[#C7230F]/70 uppercase tracking-wider">FAT</div>
+            {/* Fat */}
+            <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/20 rounded-2xl p-5 text-center flex flex-col justify-between">
+              <div>
+                <Droplets size={26} className="text-[#C7230F] mx-auto mb-2" />
+                <div className="text-3xl font-black text-[#C7230F] mb-1">{item.fat_g}g</div>
+                <div className="text-xs font-black text-[#C7230F] uppercase tracking-wider mb-3">HEALTHY FATS</div>
+              </div>
+              <div>
+                <div className="w-full bg-[#C7230F]/15 rounded-full h-2.5 overflow-hidden mb-1.5">
+                  <div className="bg-[#C7230F] h-full rounded-full" style={{ width: `${fatPct}%` }} />
+                </div>
+                <div className="text-[11px] font-extrabold text-[#C7230F]/70">{fatPct}% of macro profile</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Fresh Ingredients & Culinary Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          {/* Ingredients List */}
+          <div className="lg:col-span-2 bg-white rounded-3xl border-2 border-[#C7230F]/20 p-6 sm:p-8 shadow-xs">
+            <h3 className="text-xl font-black text-[#C7230F] mb-4 flex items-center gap-2">
+              <ChefHat size={22} /> Key Fresh Ingredients
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(item.ingredients || []).map((ing, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-3 bg-[#FFFFEF] border border-[#C7230F]/20 p-3.5 rounded-2xl text-xs font-extrabold text-[#C7230F]"
+                >
+                  <CheckCircle2 size={16} className="text-[#C7230F] shrink-0" />
+                  <span>{ing}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Dietary & Allergen Box */}
+          <div className="bg-white rounded-3xl border-2 border-[#C7230F]/20 p-6 sm:p-8 shadow-xs flex flex-col justify-between">
+            <div>
+              <h3 className="text-xl font-black text-[#C7230F] mb-4 flex items-center gap-2">
+                <AlertCircle size={22} /> Dietary & Allergens
+              </h3>
+              <div className="flex flex-col gap-3 mb-6">
+                <div className="bg-[#FFFFEF] border border-[#C7230F]/20 p-3.5 rounded-2xl">
+                  <div className="text-[11px] font-black uppercase text-[#C7230F]/70 mb-1">ALLERGEN INFORMATION</div>
+                  <div className="text-xs font-extrabold text-[#C7230F]">
+                    {item.allergens && item.allergens.length > 0 ? item.allergens.join(', ') : '100% Halal (Nut-Free)'}
+                  </div>
+                </div>
+
+                <div className="bg-[#FFFFEF] border border-[#C7230F]/20 p-3.5 rounded-2xl">
+                  <div className="text-[11px] font-black uppercase text-[#C7230F]/70 mb-1">PREPARATION GUARANTEE</div>
+                  <div className="text-xs font-extrabold text-[#C7230F]">
+                    Cooked Fresh to Order • Zero Artificial Flavors
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#C7230F] text-[#FFFFEF] p-4 rounded-2xl text-center text-xs font-black">
+              ✦ 100% Quality & Hygiene Inspected
             </div>
           </div>
         </div>

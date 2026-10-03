@@ -52,6 +52,9 @@ export interface FoodItem {
   is_featured: boolean
   sort_order: number
   variants?: { name: string; price?: number }[]
+  ingredients?: string[]
+  serving_size?: string
+  allergens?: string[]
   created_at: string
   updated_at: string
 }

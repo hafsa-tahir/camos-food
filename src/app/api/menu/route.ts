@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { REAL_MENU_ITEMS } from '@/lib/menuData'
+import { REAL_MENU_ITEMS, enrichFoodItem } from '@/lib/menuData'
 
 export async function GET(request: NextRequest) {
   const supabase = await createServiceClient()
@@ -49,7 +49,8 @@ export async function GET(request: NextRequest) {
   const dbNames = new Set((dbItems || []).map((i) => i.name.toLowerCase()))
   const localOnly = REAL_MENU_ITEMS.filter((i) => !dbNames.has(i.name.toLowerCase()))
 
-  let items = [...(dbItems || []), ...localOnly]
+  let rawItems = [...(dbItems || []), ...localOnly]
+  let items = rawItems.map(enrichFoodItem)
 
   // Filter out subscription plans so deals remain strictly on the /deals page
   items = items.filter((i) => i.category !== 'subscription' && !i.name.toLowerCase().includes('plan') && !i.tags?.includes('subscription'))
