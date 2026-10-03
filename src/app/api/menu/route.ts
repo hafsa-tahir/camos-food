@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
   let query = supabase
     .from('food_items')
     .select('*')
-    .eq('status', 'active')
     .order('sort_order', { ascending: true })
 
   if (category && category !== 'all') {
@@ -43,24 +42,20 @@ export async function GET(request: NextRequest) {
     query = query.eq('is_featured', true)
   }
 
-  const { data, error } = await query
+  const { data: dbItems, error } = await query
 
-  // Merge: Supabase items take priority, but always include REAL_MENU_ITEMS as baseline
-  // Match by name (lowercase) since DB uses UUIDs while local uses slug IDs
-  let items: typeof REAL_MENU_ITEMS = []
-  if (data && data.length > 0) {
-    const dbNames = new Set(data.map(i => i.name.toLowerCase()))
-    const localOnly = REAL_MENU_ITEMS.filter(i => !dbNames.has(i.name.toLowerCase()))
-    items = [...data, ...localOnly]
-  } else {
-    items = [...REAL_MENU_ITEMS]
-  }
+  // Merge DB items with REAL_MENU_ITEMS baseline.
+  // DB items (including inactive/out-of-stock ones) ALWAYS override local items!
+  const dbNames = new Set((dbItems || []).map((i) => i.name.toLowerCase()))
+  const localOnly = REAL_MENU_ITEMS.filter((i) => !dbNames.has(i.name.toLowerCase()))
+
+  let items = [...(dbItems || []), ...localOnly]
 
   // Filter out subscription plans so deals remain strictly on the /deals page
   items = items.filter((i) => i.category !== 'subscription' && !i.name.toLowerCase().includes('plan') && !i.tags?.includes('subscription'))
 
   // Apply filters on merged list when DB didn't handle them
-  if (!data || data.length === 0) {
+  if (!dbItems || dbItems.length === 0) {
     if (category && category !== 'all') {
       items = items.filter(i => i.category === category)
     }
