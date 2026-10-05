@@ -18,7 +18,7 @@ export default function SignupPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/signup', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -27,17 +27,23 @@ export default function SignupPage() {
           password: form.password,
           referral_code: form.referral_code.trim() || undefined,
         }),
-      }).then((r) => r.json())
+      })
 
-      if (res.error) {
-        toast.error(res.error)
+      const res = await response.json()
+
+      if (!response.ok || res.error) {
+        toast.error(res.error || 'Signup failed. Please try again.')
       } else {
         toast.success(res.message || 'Account created successfully!')
-        router.push('/orders')
-        router.refresh()
+        if (res.data?.redirectUrl === '/admin') {
+          window.location.href = '/admin'
+        } else {
+          router.push('/orders')
+          router.refresh()
+        }
       }
     } catch (err: any) {
-      toast.error('Signup failed. Please try again.')
+      toast.error(err?.message || 'Signup failed. Please try again.')
     } finally {
       setLoading(false)
     }

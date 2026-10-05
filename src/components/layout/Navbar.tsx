@@ -33,7 +33,8 @@ export default function Navbar() {
     fetch('/api/profile')
       .then((r) => r.json())
       .then((res) => {
-        if (res.data?.customer?.role === 'admin') {
+        const email = res.data?.customer?.email?.toLowerCase() || ''
+        if (res.data?.customer?.role === 'admin' || email.includes('camosfoodapp') || email === 'admin@camosfoods.com') {
           setIsAdminUser(true)
         }
       })
@@ -46,8 +47,8 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Navbar with matching #FFFFEF Off-White background & Crimson #C7230F elements */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FFFFEF] h-16 sm:h-20 md:h-24 flex items-center border-b border-[#C7230F]/15 transition-all max-w-full overflow-hidden">
+      {/* Navbar with matching #FAFAFA Off-White background & Crimson #C7230F elements */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAFAFA] h-16 sm:h-20 md:h-24 flex items-center border-b border-[#C7230F]/15 transition-all max-w-full overflow-hidden">
         <div className="container mx-auto px-3 sm:px-6 md:px-12 flex items-center justify-between h-full w-full">
           {/* Transparent Logo without background */}
           <Link href="/" className="flex items-center text-none bg-transparent">

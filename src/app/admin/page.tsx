@@ -25,7 +25,9 @@ import {
   Trash2,
   DollarSign,
   Calendar,
-  UserCheck
+  UserCheck,
+  LogOut,
+  Lock
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatPrice } from '@/lib/utils'
@@ -131,7 +133,7 @@ export default function AdminDashboardPage() {
   const checkAdmin = async () => {
     try {
       const res = await fetch('/api/admin/orders').then((r) => r.json())
-      if (res.error === 'Admin access required') {
+      if (res.error || !res.data) {
         setIsAdmin(false)
       } else {
         setIsAdmin(true)
@@ -153,18 +155,29 @@ export default function AdminDashboardPage() {
       const res = await fetch('/api/auth/admin-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: adminPassword || adminEmail }),
+        body: JSON.stringify({ key: adminPassword }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Login failed')
 
       toast.success('Admin Secret Key verified! Unlocking Dashboard...')
       setIsAdmin(true)
+      setAdminPassword('')
       loadOrders()
     } catch (err: any) {
-      toast.error(err.message || 'Invalid admin key')
+      toast.error(err.message || 'Invalid admin secret password')
     } finally {
       setLoggingIn(false)
+    }
+  }
+
+  const handleAdminLogout = async () => {
+    try {
+      await fetch('/api/auth/admin-logout', { method: 'POST' })
+      toast.success('Admin Dashboard session locked')
+      setIsAdmin(false)
+    } catch {
+      toast.error('Error locking admin session')
     }
   }
 
@@ -388,40 +401,54 @@ export default function AdminDashboardPage() {
   const activeProductsCount = foodItems.filter((f) => f.status === 'active').length
   const outOfStockCount = foodItems.filter((f) => f.status !== 'active').length
 
-  // Admin Login Screen
+  // Admin Loading Screen
+  if (isAdmin === null) {
+    return (
+      <div style={{ backgroundColor: '#FAFAFA', color: '#C7230F' }} className="min-h-screen pt-32 pb-16 px-4 font-sans flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <RefreshCw size={36} className="animate-spin text-[#C7230F]" />
+          <span className="font-extrabold text-sm tracking-wider uppercase">Verifying Admin Credentials...</span>
+        </div>
+      </div>
+    )
+  }
+
+  // Admin Secure Login Screen
   if (isAdmin === false) {
     return (
-      <div style={{ backgroundColor: '#FFFFEF', color: '#C7230F' }} className="min-h-screen pt-32 pb-16 px-4 font-sans flex flex-col items-center justify-center">
-        <div style={{ backgroundColor: '#FFFFFF', borderColor: 'rgba(199,35,15,0.3)' }} className="rounded-[2.5rem] border-2 p-8 sm:p-12 shadow-2xl max-w-md w-full text-center">
-          <div style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }} className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
-            <ShieldCheck size={32} style={{ color: '#FFFFEF' }} />
+      <div style={{ backgroundColor: '#FAFAFA', color: '#C7230F' }} className="min-h-screen pt-32 pb-16 px-4 font-sans flex flex-col items-center justify-center">
+        <div style={{ backgroundColor: '#FFFFFF', borderColor: 'rgba(199,35,15,0.25)' }} className="rounded-[2.5rem] border-2 p-8 sm:p-12 shadow-2xl max-w-md w-full text-center">
+          <div style={{ backgroundColor: '#C7230F', color: '#FFFFFF' }} className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
+            <Lock size={32} style={{ color: '#FFFFFF' }} />
           </div>
-          <h1 style={{ color: '#C7230F' }} className="font-serif font-black text-2xl mb-2">Admin Portal Login</h1>
-          <p style={{ color: '#C7230F' }} className="text-xs font-bold opacity-80 mb-6">Enter your Admin Secret Key from .env.local to access live orders & management</p>
+          <h1 style={{ color: '#C7230F' }} className="font-serif font-black text-2xl mb-2">Restricted Admin Access</h1>
+          <p style={{ color: '#C7230F' }} className="text-xs font-bold opacity-80 mb-6">Enter the Admin Secret Password from .env.local to access live orders & management</p>
 
           <form onSubmit={handleAdminLogin} className="flex flex-col gap-4 text-left">
             <div>
               <label style={{ color: '#C7230F' }} className="block text-xs font-black uppercase tracking-wider mb-1">
-                Admin Secret Key
+                Admin Secret Password / Key
               </label>
               <input
                 type="password"
                 required
+                autoFocus
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 placeholder="••••••••••••••••"
-                style={{ backgroundColor: '#FFFFEF', color: '#C7230F', borderColor: 'rgba(199,35,15,0.3)' }}
-                className="w-full p-3.5 rounded-xl border-2 font-mono font-black text-sm outline-none"
+                style={{ backgroundColor: '#FAFAFA', color: '#C7230F', borderColor: 'rgba(199,35,15,0.3)' }}
+                className="w-full p-4 rounded-xl border-2 font-mono font-black text-sm outline-none focus:border-[#C7230F]"
               />
             </div>
 
             <button
               type="submit"
               disabled={loggingIn}
-              style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }}
-              className="mt-2 w-full py-4 rounded-full font-black text-sm uppercase tracking-wider shadow-lg hover:bg-[#A31C0C] cursor-pointer border-none"
+              style={{ backgroundColor: '#C7230F', color: '#FFFFFF' }}
+              className="mt-2 w-full py-4 rounded-full font-black text-sm uppercase tracking-wider shadow-lg hover:bg-[#A31C0C] cursor-pointer border-none transition-all flex items-center justify-center gap-2"
             >
-              {loggingIn ? 'Authenticating...' : 'Unlock Dashboard'}
+              <ShieldCheck size={18} />
+              <span>{loggingIn ? 'Authenticating...' : 'Unlock Admin Dashboard'}</span>
             </button>
           </form>
         </div>
@@ -430,13 +457,13 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div style={{ backgroundColor: '#FFFFEF', color: '#C7230F' }} className="min-h-screen pt-28 pb-16 px-4 sm:px-8 font-sans">
+    <div style={{ backgroundColor: '#FAFAFA', color: '#C7230F' }} className="min-h-screen pt-28 pb-16 px-4 sm:px-8 font-sans">
       <div className="max-w-[1280px] mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <div style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }} className="inline-flex items-center gap-1.5 font-black text-[11px] px-3.5 py-1 rounded-full uppercase tracking-wider mb-2">
-              <Sparkles size={13} style={{ color: '#FFFFEF' }} />
+            <div style={{ backgroundColor: '#C7230F', color: '#FFFFFF' }} className="inline-flex items-center gap-1.5 font-black text-[11px] px-3.5 py-1 rounded-full uppercase tracking-wider mb-2">
+              <Sparkles size={13} style={{ color: '#FFFFFF' }} />
               <span>CAMO'S FOODS MANAGEMENT</span>
             </div>
             <h1 style={{ color: '#C7230F' }} className="font-serif font-black text-3xl sm:text-4xl">
@@ -457,6 +484,15 @@ export default function AdminDashboardPage() {
             >
               <RefreshCw size={16} />
               <span>Refresh Data</span>
+            </button>
+
+            <button
+              onClick={handleAdminLogout}
+              style={{ backgroundColor: '#C7230F', color: '#FFFFFF' }}
+              className="px-4 py-3 rounded-2xl border-none font-extrabold text-xs flex items-center gap-2 cursor-pointer hover:bg-[#A31C0C] shadow-md transition-all uppercase tracking-wider"
+            >
+              <LogOut size={16} />
+              <span>Lock Admin</span>
             </button>
 
             <button

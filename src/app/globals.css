@@ -4,9 +4,9 @@
   --color-crimson: #C7230F;
   --color-crimson-dark: #A31C0C;
   --color-crimson-darker: #7A1408;
-  --color-offwhite: #FFFFEF;
-  --color-offwhite-card: #FFFDF2;
-  --color-offwhite-border: #EBEBCE;
+  --color-offwhite: #FAFAFA;
+  --color-offwhite-card: #FFFFFF;
+  --color-offwhite-border: #E5E5E5;
 }
 
 /* ── Crimson & Off-White 2-Color Design System ── */
@@ -15,9 +15,9 @@
   --crimson-dark:     #A31C0C;
   --crimson-darker:   #7A1408;
   --crimson-light:    #A51C1C;
-  --offwhite:         #FFFFEF;
-  --offwhite-card:    #FFFDF2;
-  --offwhite-border:  #EBEBCE;
+  --offwhite:         #FAFAFA;
+  --offwhite-card:    #FFFFFF;
+  --offwhite-border:  #E5E5E5;
   --white:            #FFFFFF;
   --font-sans:        'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-serif:       'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -28,17 +28,17 @@
 .bg-crimson-dark { background-color: #A31C0C !important; }
 .text-crimson { color: #C7230F !important; }
 
-.bg-offwhite { background-color: #FFFFEF !important; }
-.text-offwhite { color: #FFFFEF !important; }
+.bg-offwhite { background-color: #FAFAFA !important; }
+.text-offwhite { color: #FAFAFA !important; }
 
 /* Custom Arbitrary Class Overrides for Tailwind v4 compatibility */
 .bg-\[\#C7230F\] { background-color: #C7230F !important; }
 .bg-\[\#A31C0C\] { background-color: #A31C0C !important; }
-.bg-\[\#FFFFEF\] { background-color: #FFFFEF !important; }
+.bg-\[\#FFFFEF\] { background-color: #FAFAFA !important; }
 .text-\[\#C7230F\] { color: #C7230F !important; }
-.text-\[\#FFFFEF\] { color: #FFFFEF !important; }
+.text-\[\#FFFFEF\] { color: #FFFFFF !important; }
 .border-\[\#C7230F\] { border-color: #C7230F !important; }
-.border-\[\#FFFFEF\] { border-color: #FFFFEF !important; }
+.border-\[\#FFFFEF\] { border-color: #FAFAFA !important; }
 
 
 /* ── Global Reset & Font Enforcement ── */
@@ -54,7 +54,7 @@ html {
 
 body {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  background-color: #FFFFEF !important;
+  background-color: #FAFAFA !important;
   color: #C7230F;
   -webkit-font-smoothing: antialiased;
   max-width: 100vw;

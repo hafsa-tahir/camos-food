@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  // Allow Cloudflare Tunnels and local addresses in dev mode
+  allowedDevOrigins: ['*.trycloudflare.com', 'localhost:3000', '127.0.0.1:3000'],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },
@@ -8,10 +10,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.supabase.in' },
     ],
   },
-  // Disable static optimization for admin routes
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000'],
+      allowedOrigins: ['*.trycloudflare.com', 'localhost:3000', '127.0.0.1:3000'],
     },
   },
 }

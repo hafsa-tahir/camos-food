@@ -27,9 +27,14 @@ export default function LoginPage() {
       if (!res.ok) {
         toast.error(data.error || 'Invalid login credentials. Please check your email and password.')
       } else {
-        toast.success('Welcome back! Signed in successfully.')
-        router.push('/orders')
-        router.refresh()
+        if (data.data?.redirectUrl === '/admin' || data.data?.isAdmin || data.data?.customer?.role === 'admin') {
+          toast.success('Welcome Admin! Access granted.')
+          window.location.href = '/admin'
+        } else {
+          toast.success('Welcome back! Signed in successfully.')
+          router.push('/orders')
+          router.refresh()
+        }
       }
     } catch (err: any) {
       toast.error(err?.message || 'Login failed. Please check your credentials.')

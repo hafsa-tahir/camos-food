@@ -38,7 +38,7 @@ export default function CartDrawer({ open, onClose }: { open: boolean; onClose: 
           bottom: 0,
           width: 420,
           maxWidth: '95vw',
-          background: '#FFFFEF',
+          background: '#FAFAFA',
           zIndex: 99,
           transform: open ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform .3s cubic-bezier(.22,.61,.36,1)',
