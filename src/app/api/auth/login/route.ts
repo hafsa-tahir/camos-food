@@ -9,7 +9,7 @@ const loginSchema = z.object({
 })
 
 const ADMIN_EMAILS = ['camosfoodapp@gmail.com', 'camosfoodapp@gamil.com', 'admin@camosfoods.com']
-const ADMIN_PASSWORD = process.env.ADMIN_SECRET_KEY || 'ORGANIC;CHEMISTRY6969'
+const ADMIN_PASSWORD = process.env.ADMIN_SECRET_KEY
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies()
 
     const isAdminCredential =
-      ADMIN_EMAILS.includes(normalizedEmail) || password === ADMIN_PASSWORD
+      ADMIN_EMAILS.includes(normalizedEmail) && Boolean(ADMIN_PASSWORD && password === ADMIN_PASSWORD)
 
     // 1. Attempt standard login
     let { data: authData, error } = await supabase.auth.signInWithPassword({
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Set HTTP-only session cookies
-    if (shouldBeAdmin) {
+    if (shouldBeAdmin && ADMIN_PASSWORD) {
       cookieStore.set('admin_key', ADMIN_PASSWORD, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

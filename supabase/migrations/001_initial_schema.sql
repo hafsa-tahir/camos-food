@@ -269,4 +269,4 @@ INSERT INTO food_items (name, description, price, calories, protein_g, carbs_g, 
 INSERT INTO deals (title, description, discount_type, discount_value, applies_to, min_order_amount, image_url, starts_at, ends_at) VALUES
 ('Weekend Special', 'Get 20% off on all orders above PKR 800 this weekend!', 'percentage', 20, 'storewide', 800, 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500', NOW(), NOW() + INTERVAL '7 days'),
 ('Healthy Choices', 'Flat PKR 100 off on all salads and bowls', 'flat', 100, 'category', 0, 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500', NOW(), NOW() + INTERVAL '30 days'),
-('First Order Discount', '15% off your first order — welcome to FoodApp!', 'percentage', 15, 'storewide', 0, 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500', NOW(), NOW() + INTERVAL '90 days');
+('First Order Discount', '15% off your first order — welcome to Camo''s Foods!', 'percentage', 15, 'storewide', 0, 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500', NOW(), NOW() + INTERVAL '90 days');

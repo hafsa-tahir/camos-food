@@ -166,16 +166,61 @@ export default function Navbar() {
                   </Link>
                 )
               })}
+
+              {/* Mobile-accessible Favorites */}
+              <Link
+                href="/favorites"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center justify-between px-3.5 py-3 rounded-xl no-underline text-sm transition-all ${
+                  pathname === '/favorites' ? 'bg-[#C7230F] text-[#FFFFEF] font-black' : 'text-[#C7230F] hover:bg-[#C7230F]/10 font-bold'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Heart size={18} className={pathname === '/favorites' ? 'stroke-[#FFFFEF] fill-[#FFFFEF]' : 'stroke-[#C7230F]'} />
+                  <span>Favorites</span>
+                </div>
+                {mounted && favCount > 0 && (
+                  <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2 py-0.5 rounded-full border border-[#FFFFEF]">
+                    {favCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Mobile-accessible Account & Orders */}
+              <Link
+                href="/orders"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-3.5 py-3 rounded-xl no-underline text-sm transition-all ${
+                  pathname.startsWith('/orders') ? 'bg-[#C7230F] text-[#FFFFEF] font-black' : 'text-[#C7230F] hover:bg-[#C7230F]/10 font-bold'
+                }`}
+              >
+                <User size={18} className={pathname.startsWith('/orders') ? 'stroke-[#FFFFEF]' : 'stroke-[#C7230F]'} />
+                <span>My Account & Orders</span>
+              </Link>
             </div>
 
-            <div className="mt-auto pt-6 border-t border-[#C7230F]/20 flex flex-col gap-2.5">
+            <div className="mt-auto pt-5 border-t border-[#C7230F]/20 flex flex-col gap-2.5">
               <Link
                 href="/menu"
                 onClick={() => setMobileMenuOpen(false)}
-                className="bg-[#C7230F] text-[#FFFFEF] font-extrabold text-sm py-3 rounded-full text-center no-underline shadow-md"
+                className="bg-[#C7230F] text-[#FFFFEF] font-extrabold text-sm py-3 rounded-full text-center no-underline shadow-md hover:bg-[#A31C0C] transition-colors"
               >
                 Order Now →
               </Link>
+
+              <a
+                href="https://www.instagram.com/camosfoods?stkn=NHRuM3g5ZGRzYXR4"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 py-2 px-3 text-[#C7230F] font-bold text-xs no-underline hover:underline"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                </svg>
+                <span>@camosfoods on Instagram</span>
+              </a>
             </div>
           </div>
         </div>

@@ -10,18 +10,20 @@ const ADMIN_EMAILS = ['camosfoodapp@gmail.com', 'camosfoodapp@gamil.com', 'admin
  */
 export async function checkIsAdmin(request?: NextRequest): Promise<boolean> {
   try {
-    const adminKey = process.env.ADMIN_SECRET_KEY || 'ORGANIC;CHEMISTRY6969'
+    const adminKey = process.env.ADMIN_SECRET_KEY
 
-    // 1. Check custom request header
-    if (request) {
+    // 1. Check custom request header (only if secret key is properly configured)
+    if (request && adminKey) {
       const headerKey = request.headers.get('x-admin-key')
       if (headerKey && headerKey === adminKey) return true
     }
 
-    // 2. Check admin_key HTTP-only cookie
-    const cookieStore = await cookies()
-    const cookieKey = cookieStore.get('admin_key')?.value
-    if (cookieKey && cookieKey === adminKey) return true
+    // 2. Check admin_key HTTP-only cookie (only if secret key is properly configured)
+    if (adminKey) {
+      const cookieStore = await cookies()
+      const cookieKey = cookieStore.get('admin_key')?.value
+      if (cookieKey && cookieKey === adminKey) return true
+    }
 
     // 3. Fallback: Check Supabase Auth User
     const supabase = await createClient()

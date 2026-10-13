@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { REAL_MENU_ITEMS, enrichFoodItem } from '@/lib/menuData'
 
+export const revalidate = 60
+
 export async function GET(request: NextRequest) {
   const supabase = await createServiceClient()
   const { searchParams } = new URL(request.url)
@@ -76,5 +78,12 @@ export async function GET(request: NextRequest) {
     .eq('is_active', true)
     .or('ends_at.is.null,ends_at.gt.now()')
 
-  return NextResponse.json({ data: { items, deals: deals || [] } })
+  return NextResponse.json(
+    { data: { items, deals: deals || [] } },
+    {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
+    }
+  )
 }

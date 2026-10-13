@@ -72,7 +72,7 @@ export default function HomepageClient() {
             </Link>
 
             {/* Features Row */}
-            <div className="flex gap-[35px] items-center">
+            <div className="flex gap-4 sm:gap-[35px] items-center">
               <div className="flex flex-col items-center gap-3 cursor-pointer group">
                 <div className="w-[54px] h-[54px] bg-[#C7230F]/10 group-hover:bg-[#C7230F] group-hover:text-[#FFFFEF] rounded-full flex items-center justify-center text-[#C7230F] text-xl transition-all duration-300 group-hover:scale-105 border border-[#C7230F]/20">
                   <Award size={20} />

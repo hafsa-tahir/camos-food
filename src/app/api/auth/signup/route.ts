@@ -18,14 +18,15 @@ const signupSchema = z.object({
 })
 
 const ADMIN_EMAILS = ['camosfoodapp@gmail.com', 'camosfoodapp@gamil.com', 'admin@camosfoods.com']
-const ADMIN_PASSWORD = process.env.ADMIN_SECRET_KEY || 'ORGANIC;CHEMISTRY6969'
+const ADMIN_PASSWORD = process.env.ADMIN_SECRET_KEY
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const parsed = signupSchema.parse(body)
     const normalizedEmail = parsed.email.trim().toLowerCase()
-    const isAdminAccount = ADMIN_EMAILS.includes(normalizedEmail) || parsed.password === ADMIN_PASSWORD
+    const isAdminAccount =
+      ADMIN_EMAILS.includes(normalizedEmail) && Boolean(ADMIN_PASSWORD && parsed.password === ADMIN_PASSWORD)
 
     const supabase = await createClient()
     const serviceClient = await createServiceClient()

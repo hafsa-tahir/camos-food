@@ -6,9 +6,9 @@ export async function POST(request: NextRequest) {
     const { key, secretKey, passkey, password } = await request.json()
     const providedKey = (key || secretKey || passkey || password || '').trim()
 
-    const expectedKey = process.env.ADMIN_SECRET_KEY || 'camos_admin_secure_key_2026'
+    const expectedKey = process.env.ADMIN_SECRET_KEY
 
-    if (providedKey && providedKey === expectedKey) {
+    if (expectedKey && providedKey && providedKey === expectedKey) {
       const cookieStore = await cookies()
       cookieStore.set('admin_key', expectedKey, {
         httpOnly: true,

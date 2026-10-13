@@ -300,21 +300,24 @@ export async function POST(request: NextRequest) {
           }
         })
 
+        const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://www.camosfoods.com'
+        const appUrl = origin.replace(/\/$/, '')
+
         const sessionParams: Stripe.Checkout.SessionCreateParams = {
           payment_method_types: ['card'],
           line_items: lineItems,
           mode: 'payment',
           customer_email: customer?.email,
           metadata: { order_id: order.id, user_id: user.id, coupon_id: couponId || '' },
-          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/orders?success=true`,
-          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/cart`,
+          success_url: `${appUrl}/orders?success=true`,
+          cancel_url: `${appUrl}/cart`,
         }
 
         if (discountAmount > 0) {
           const stripeCoupon = await stripe.coupons.create({
             amount_off: Math.round(discountAmount * 100),
             currency: 'pkr',
-            name: 'FoodApp Discount',
+            name: "Camo's Foods Discount",
           })
           sessionParams.discounts = [{ coupon: stripeCoupon.id }]
         }
