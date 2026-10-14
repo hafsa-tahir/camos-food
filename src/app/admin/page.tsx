@@ -366,7 +366,7 @@ export default function AdminDashboardPage() {
       }).then((r) => r.json())
 
       if (res.data) {
-        toast.success(`"${item.name}" is now ${nextStatus === 'active' ? 'AVAILABLE' : 'OUT OF STOCK'}`)
+        toast.success(`"${item.name}" is now ${nextStatus === 'active' ? 'AVAILABLE' : 'NOT AVAILABLE'}`)
         setFoodItems((prev) => prev.map((f) => (f.id === item.id ? { ...f, status: nextStatus } : f)))
       } else {
         toast.error(res.error || 'Failed to update item availability')
@@ -760,7 +760,7 @@ export default function AdminDashboardPage() {
                   {activeProductsCount} Available
                 </span>
                 <span style={{ backgroundColor: '#DC2626', color: '#FFFFEF' }} className="font-black text-xs px-3 py-1.5 rounded-xl uppercase tracking-wider">
-                  {outOfStockCount} Out of Stock
+                  {outOfStockCount} Not Available
                 </span>
               </div>
             </div>
@@ -787,7 +787,7 @@ export default function AdminDashboardPage() {
                           }}
                           className="font-black text-[10px] px-2.5 py-1 rounded-md uppercase"
                         >
-                          {isAvailable ? 'AVAILABLE' : 'OUT OF STOCK'}
+                          {isAvailable ? 'AVAILABLE' : 'NOT AVAILABLE'}
                         </span>
                       </div>
                       <h3 style={{ color: '#C7230F' }} className="font-black text-lg mb-1">{item.name}</h3>
@@ -812,7 +812,7 @@ export default function AdminDashboardPage() {
                           }}
                           className="flex-1 py-2 px-3 rounded-xl border font-black text-xs uppercase tracking-wider cursor-pointer transition-all hover:scale-102"
                         >
-                          {isAvailable ? 'Mark Out of Stock' : 'Mark Available'}
+                          {isAvailable ? 'Mark Not Available' : 'Mark Available'}
                         </button>
 
                         <button

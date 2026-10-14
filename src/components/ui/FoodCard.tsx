@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Heart, ShoppingBag, Plus, Minus } from 'lucide-react'
+import { Heart, ShoppingBag, Plus, Minus, Calendar } from 'lucide-react'
 import { FoodItem } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 import { useCartStore } from '@/store/cartStore'
 import { useFavoritesStore } from '@/store/favoritesStore'
+import { getDishAvailability } from '@/lib/schedule'
 import { toast } from 'sonner'
 
 interface FoodCardProps {
@@ -21,9 +22,13 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
   const cartItems = useCartStore((s) => s.items)
   const cartItem = cartItems.find((i) => i.food_item.id === item.id)
   const qty = cartItem?.quantity || 0
-  
+
   const toggleFav = useFavoritesStore((s) => s.toggleFavorite)
   const isFav = useFavoritesStore((s) => s.isFavorite(item.id))
+
+  // Dynamic daily schedule availability
+  const availability = getDishAvailability(item)
+  const isAvailable = availability.isAvailableToday && item.status !== 'inactive'
 
   const handleHeartClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -38,6 +43,15 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
 
   const add = (e: React.MouseEvent) => {
     e.stopPropagation()
+    e.preventDefault()
+    if (!isAvailable) {
+      toast.info(
+        availability.cookedOnDay
+          ? `"${item.name}" is cooked fresh on ${availability.cookedOnDay}s! Available every ${availability.cookedOnDay}.`
+          : `"${item.name}" is not available today.`
+      )
+      return
+    }
     addItem(item)
     toast.success(`Added ${item.name} to cart`)
   }
@@ -46,30 +60,43 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
 
   return (
     <Link href={`/menu/${item.id}`} className="no-underline text-inherit block">
-      <div className="bg-white rounded-[34px] p-3 pb-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1.5 cursor-pointer font-sans flex flex-col group border border-[#C7230F]/15">
+      <div className={`bg-white rounded-[34px] p-3 pb-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1.5 cursor-pointer font-sans flex flex-col group border ${isAvailable ? 'border-[#C7230F]/20' : 'border-gray-200'}`}>
         {/* Media Container */}
         <div className="relative h-[270px] bg-[#FFFFEF] rounded-3xl border border-[#C7230F]/15 overflow-hidden flex flex-col justify-between p-3.5 box-border">
           {/* Top Badges */}
-          <div className="flex items-center gap-2 z-10 justify-between w-full">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 z-10 justify-between w-full flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {discount && discount > 0 ? (
                 <span className="bg-[#C7230F] text-[#FFFFEF] text-xs font-black px-3.5 py-1.5 rounded-xl tracking-wide">
                   - {discount}%
                 </span>
               ) : null}
-              <span className="bg-[#FFFFEF] text-[#C7230F] text-xs font-extrabold px-3.5 py-1.5 rounded-xl border border-[#C7230F]/20 shadow-xs capitalize">
-                {item.category || 'Special'}
-              </span>
+
+              {/* Special / Breakfast / Category Badge */}
+              {availability.isSpecialToday ? (
+                <span className="bg-[#C7230F] text-[#FFFFEF] text-[11px] font-black px-3 py-1.5 rounded-xl shadow-xs uppercase tracking-wide">
+                  ✦ {availability.badgeLabel}
+                </span>
+              ) : availability.isBreakfast ? (
+                <span className="bg-[#2E7D32] text-white text-[11px] font-black px-3 py-1.5 rounded-xl shadow-xs uppercase tracking-wide">
+                  🍳 Daily Breakfast
+                </span>
+              ) : (
+                <span className="bg-[#FFFFEF] text-[#C7230F] text-xs font-extrabold px-3 py-1.5 rounded-xl border border-[#C7230F]/20 shadow-xs capitalize">
+                  {item.category || 'Special'}
+                </span>
+              )}
             </div>
 
-            {item.status === 'inactive' && (
-              <span className="bg-red-700 text-white font-black text-[10px] px-3 py-1.5 rounded-xl uppercase tracking-wider shadow-md z-20">
-                OUT OF STOCK
+            {/* NOT AVAILABLE Notice */}
+            {!isAvailable && (
+              <span className="bg-neutral-800/90 text-white font-black text-[10px] px-3 py-1.5 rounded-xl uppercase tracking-wider shadow-md backdrop-blur-xs">
+                {availability.cookedOnDay ? `ON ${availability.cookedOnDay.toUpperCase()}` : 'NOT AVAILABLE'}
               </span>
             )}
           </div>
 
-          {/* Image */}
+          {/* Image & Overlay */}
           <div className="absolute inset-0 z-0">
             {item.image_url ? (
               <>
@@ -77,20 +104,27 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
                   src={item.image_url}
                   alt={item.name}
                   fill
-                  className={`object-cover group-hover:scale-105 transition-transform duration-500 ${item.status === 'inactive' ? 'grayscale opacity-60' : ''}`}
+                  className={`object-cover group-hover:scale-105 transition-transform duration-500 ${!isAvailable ? 'grayscale-[55%] opacity-75' : ''}`}
                   unoptimized
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/30 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/35 pointer-events-none" />
               </>
             ) : (
               <div className="flex items-center justify-center h-full text-[#C7230F] font-bold">Camo Foods</div>
             )}
 
-            {item.status === 'inactive' && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10">
-                <span className="bg-red-600 text-white font-black text-xs px-4 py-2 rounded-full uppercase tracking-widest border border-white/40 shadow-xl">
-                  OUT OF STOCK
+            {/* Overlay Banner for Unavailable Items */}
+            {!isAvailable && (
+              <div className="absolute inset-0 bg-black/45 backdrop-blur-[0.5px] flex flex-col items-center justify-center p-4 text-center z-10">
+                <span className="bg-[#C7230F] text-white font-black text-xs px-4 py-2 rounded-full uppercase tracking-wider shadow-xl border border-white/30 mb-1.5">
+                  NOT AVAILABLE TODAY
                 </span>
+                {availability.cookedOnDay && (
+                  <span className="bg-white/95 text-[#C7230F] font-black text-[11px] px-3 py-1 rounded-full uppercase tracking-wide shadow-sm flex items-center gap-1">
+                    <Calendar size={12} />
+                    Available on {availability.cookedOnDay}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -109,16 +143,21 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
               />
             </button>
 
-            {item.status === 'inactive' ? (
+            {!isAvailable ? (
               <button
                 type="button"
                 onClick={(e) => {
+                  e.preventDefault()
                   e.stopPropagation()
-                  toast.error(`"${item.name}" is currently OUT OF STOCK.`)
+                  toast.info(
+                    availability.cookedOnDay
+                      ? `"${item.name}" is cooked fresh on ${availability.cookedOnDay}s! Available every ${availability.cookedOnDay}.`
+                      : `"${item.name}" is not available today.`
+                  )
                 }}
-                className="h-11 px-4 bg-gray-400 text-white font-black text-[11px] rounded-2xl border-none cursor-not-allowed uppercase tracking-wider"
+                className="h-11 px-3.5 bg-neutral-900/90 text-white font-black text-[11px] rounded-2xl border border-white/20 cursor-pointer hover:bg-neutral-800 transition-colors uppercase tracking-wider shadow-md backdrop-blur-xs"
               >
-                OUT OF STOCK
+                {availability.cookedOnDay ? `On ${availability.cookedOnDay}` : 'Not Available'}
               </button>
             ) : qty === 0 ? (
               <button
@@ -131,10 +170,17 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
             ) : (
               <div
                 className="h-11 bg-[#C7230F] rounded-2xl px-2 flex items-center gap-1.5"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }}
               >
                 <button
-                  onClick={() => updateQty(item.id, qty - 1)}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    updateQty(item.id, qty - 1)
+                  }}
                   className="w-5.5 h-5.5 bg-white/20 hover:bg-white/30 rounded-full text-[#FFFFEF] flex items-center justify-center border-none cursor-pointer"
                 >
                   <Minus size={11} strokeWidth={2.5} />
@@ -160,11 +206,19 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
               <span className="text-[11px] font-extrabold text-[#C7230F] tracking-wider uppercase">
                 CAMO'S · {item.category || 'SPECIAL'}
               </span>
-              {item.tags && item.tags.length > 0 && (
-                <span className="text-[10px] font-bold text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md">
-                  ✦ {item.tags[0]}
+              {availability.isSpecialToday ? (
+                <span className="text-[10px] font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-2 py-0.5 rounded-md">
+                  🟢 Available Today
                 </span>
-              )}
+              ) : availability.isBreakfast ? (
+                <span className="text-[10px] font-black text-[#2E7D32] bg-[#2E7D32]/10 border border-[#2E7D32]/30 px-2 py-0.5 rounded-md">
+                  🍳 Fresh Daily
+                </span>
+              ) : availability.cookedOnDay ? (
+                <span className="text-[10px] font-black text-neutral-600 bg-neutral-100 border border-neutral-300 px-2 py-0.5 rounded-md">
+                  📅 {availability.cookedOnDay}
+                </span>
+              ) : null}
             </div>
             <div className="text-lg font-extrabold text-[#C7230F] leading-tight truncate">
               {item.name}

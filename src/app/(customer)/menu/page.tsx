@@ -1,17 +1,42 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { Search, SlidersHorizontal, X, UtensilsCrossed } from 'lucide-react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Search, SlidersHorizontal, X, UtensilsCrossed, Calendar, CheckCircle2, Clock } from 'lucide-react'
 import { FoodItem, FOOD_CATEGORIES } from '@/lib/types'
 import FoodCard from '@/components/ui/FoodCard'
+import {
+  getDishAvailability,
+  getPakistanDayOfWeek,
+  getPakistanFormattedDate,
+  WEEKLY_SCHEDULE,
+  DayOfWeek,
+} from '@/lib/schedule'
 
-export default function MenuPage() {
+function MenuContent() {
+  const searchParams = useSearchParams()
+  const initialCategory = searchParams.get('category') || 'all'
+
   const [items, setFilteredItems] = useState<FoodItem[]>([])
   const [allItems, setAllItems] = useState<FoodItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [category, setCategory] = useState('all')
+  const [category, setCategory] = useState(initialCategory)
   const [sortBy, setSortBy] = useState<'default' | 'price_asc' | 'price_desc' | 'calories_asc'>('default')
+  const [availabilityMode, setAvailabilityMode] = useState<'all' | 'today_only'>('all')
+
+  const [todayDay, setTodayDay] = useState<DayOfWeek>('Monday')
+  const [todayFormatted, setTodayFormatted] = useState('')
+
+  useEffect(() => {
+    setTodayDay(getPakistanDayOfWeek())
+    setTodayFormatted(getPakistanFormattedDate())
+  }, [])
+
+  useEffect(() => {
+    const cat = searchParams.get('category')
+    if (cat) setCategory(cat)
+  }, [searchParams])
 
   useEffect(() => {
     fetch('/api/menu')
@@ -29,9 +54,21 @@ export default function MenuPage() {
 
   const applyFilters = useCallback(() => {
     let result = [...allItems]
+
+    // Availability Filter (Only Available Today vs All)
+    if (availabilityMode === 'today_only') {
+      result = result.filter((i) => {
+        const avail = getDishAvailability(i, todayDay)
+        return avail.isAvailableToday && i.status !== 'inactive'
+      })
+    }
+
+    // Category Filter
     if (category !== 'all') {
       result = result.filter((i) => i.category === category)
     }
+
+    // Search Query Filter
     if (search.trim()) {
       const q = search.toLowerCase()
       result = result.filter(
@@ -41,27 +78,104 @@ export default function MenuPage() {
           i.tags.some((t) => t.toLowerCase().includes(q))
       )
     }
-    if (sortBy === 'price_asc') result.sort((a, b) => a.price - b.price)
-    if (sortBy === 'price_desc') result.sort((a, b) => b.price - a.price)
-    if (sortBy === 'calories_asc') result.sort((a, b) => a.calories - b.calories)
+
+    // Sorting
+    if (sortBy === 'price_asc') {
+      result.sort((a, b) => a.price - b.price)
+    } else if (sortBy === 'price_desc') {
+      result.sort((a, b) => b.price - a.price)
+    } else if (sortBy === 'calories_asc') {
+      result.sort((a, b) => a.calories - b.calories)
+    } else {
+      // Default: Sort items available today first, followed by scheduled items
+      result.sort((a, b) => {
+        const availA = getDishAvailability(a, todayDay).isAvailableToday ? 1 : 0
+        const availB = getDishAvailability(b, todayDay).isAvailableToday ? 1 : 0
+        return availB - availA
+      })
+    }
+
     setFilteredItems(result)
-  }, [allItems, category, search, sortBy])
+  }, [allItems, category, search, sortBy, availabilityMode, todayDay])
 
   useEffect(() => {
     applyFilters()
   }, [applyFilters])
 
+  const todayPlan = WEEKLY_SCHEDULE[todayDay]
+  const todayAvailableCount = allItems.filter(
+    (i) => getDishAvailability(i, todayDay).isAvailableToday && i.status !== 'inactive'
+  ).length
+
   return (
     <div className="bg-[#FFFFEF] min-h-screen text-[#C7230F] pt-24 md:pt-32 pb-16 px-4 sm:px-6 md:px-12 font-sans">
       <div className="max-w-[1280px] mx-auto">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-3.5 py-1 rounded-full uppercase tracking-wider shadow-xs">
+              LIVE SCHEDULE • {todayFormatted || todayDay}
+            </span>
+            <span className="bg-white text-[#C7230F] border border-[#C7230F]/20 font-bold text-xs px-3 py-1 rounded-full">
+              Home Kitchen Operating Hours: 08:00 – 23:00
+            </span>
+          </div>
+
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#C7230F] tracking-tight mb-2">
-            Our Menu
+            Our Menu & Daily Schedule
           </h1>
-          <p className="text-sm sm:text-base font-bold text-[#C7230F]/70">
-            Fresh halal cuisine prepared daily with authentic home-style flavors.
+          <p className="text-sm sm:text-base font-bold text-[#C7230F]/70 max-w-2xl">
+            Because everything is prepared fresh from scratch, our kitchen features <strong>2 signature rotating specials today</strong> alongside our <strong>everyday fresh breakfast menu</strong>. Other dishes are prepared on their designated days.
           </p>
+        </div>
+
+        {/* Daily Schedule Notice Banner */}
+        <div className="bg-white border-2 border-[#C7230F]/20 rounded-3xl p-5 mb-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#C7230F]/10 text-[#C7230F] flex items-center justify-center font-black text-2xl shrink-0">
+              📅
+            </div>
+            <div>
+              <div className="font-extrabold text-sm text-[#C7230F] flex items-center gap-2 flex-wrap">
+                <span>Cooking Today ({todayDay}):</span>
+                <span className="bg-[#C7230F]/10 px-2.5 py-0.5 rounded-lg text-xs font-black">
+                  🍛 {todayPlan.desiDishName}
+                </span>
+                <span>&</span>
+                <span className="bg-[#2E7D32]/10 text-[#2E7D32] px-2.5 py-0.5 rounded-lg text-xs font-black">
+                  🥗 {todayPlan.dietDishName}
+                </span>
+                <span>+ All Breakfast</span>
+              </div>
+              <div className="text-xs text-[#C7230F]/70 font-semibold mt-0.5">
+                Items not scheduled for today are clearly marked with their scheduled day and cannot be ordered today.
+              </div>
+            </div>
+          </div>
+
+          {/* Toggle View Mode */}
+          <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+            <button
+              onClick={() => setAvailabilityMode('today_only')}
+              className={`flex-1 md:flex-initial px-4 py-2 rounded-full text-xs font-black transition-all border-2 cursor-pointer ${
+                availabilityMode === 'today_only'
+                  ? 'bg-[#C7230F] text-[#FFFFEF] border-[#C7230F] shadow-sm'
+                  : 'bg-[#FFFFEF] text-[#C7230F] border-[#C7230F]/30 hover:border-[#C7230F]'
+              }`}
+            >
+              🟢 Available Today ({todayAvailableCount})
+            </button>
+            <button
+              onClick={() => setAvailabilityMode('all')}
+              className={`flex-1 md:flex-initial px-4 py-2 rounded-full text-xs font-black transition-all border-2 cursor-pointer ${
+                availabilityMode === 'all'
+                  ? 'bg-[#C7230F] text-[#FFFFEF] border-[#C7230F] shadow-sm'
+                  : 'bg-[#FFFFEF] text-[#C7230F] border-[#C7230F]/30 hover:border-[#C7230F]'
+              }`}
+            >
+              Full Menu ({allItems.length})
+            </button>
+          </div>
         </div>
 
         {/* Search & Sort Row */}
@@ -98,7 +212,7 @@ export default function MenuPage() {
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
               className="w-full sm:w-auto bg-white border-2 border-[#C7230F]/20 rounded-2xl pl-11 pr-8 py-3 text-xs sm:text-sm font-black text-[#C7230F] outline-none cursor-pointer appearance-none focus:border-[#C7230F]"
             >
-              <option value="default">Sort: Default</option>
+              <option value="default">Sort: Available Today First</option>
               <option value="price_asc">Price: Low to High</option>
               <option value="price_desc">Price: High to Low</option>
               <option value="calories_asc">Calories: Lowest First</option>
@@ -128,11 +242,19 @@ export default function MenuPage() {
 
         {/* Result Counter */}
         {!loading && (
-          <div className="text-xs sm:text-sm font-bold text-[#C7230F]/70 mb-6">
-            Showing {items.length} {items.length === 1 ? 'dish' : 'dishes'}
-            {search && ` for "${search}"`}
-            {category !== 'all' &&
-              ` in ${FOOD_CATEGORIES.find((c) => c.value === category)?.label}`}
+          <div className="flex items-center justify-between flex-wrap gap-2 text-xs sm:text-sm font-bold text-[#C7230F]/70 mb-6">
+            <div>
+              Showing {items.length} {items.length === 1 ? 'dish' : 'dishes'}
+              {availabilityMode === 'today_only' ? ' (available today)' : ''}
+              {search && ` for "${search}"`}
+              {category !== 'all' &&
+                ` in ${FOOD_CATEGORIES.find((c) => c.value === category)?.label}`}
+            </div>
+            {availabilityMode === 'all' && (
+              <div className="text-[11px] font-semibold text-[#C7230F]/70">
+                🟢 Available Today: {todayAvailableCount} | 📅 Scheduled for other days: {items.length - todayAvailableCount}
+              </div>
+            )}
           </div>
         )}
 
@@ -157,12 +279,15 @@ export default function MenuPage() {
             </div>
             <h3 className="font-extrabold text-lg text-[#C7230F] mb-2">No dishes found</h3>
             <p className="text-xs text-[#C7230F]/70 mb-6 font-medium">
-              Try adjusting your search query or selecting a different category.
+              {availabilityMode === 'today_only'
+                ? "There are no dishes matching your current filter on today's schedule. Switch to 'Full Menu' to see the whole week."
+                : 'Try adjusting your search query or selecting a different category.'}
             </p>
             <button
               onClick={() => {
                 setSearch('')
                 setCategory('all')
+                setAvailabilityMode('all')
               }}
               className="bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-6 py-3 rounded-full cursor-pointer hover:bg-[#A31C0C] transition-colors uppercase tracking-wider"
             >
@@ -178,5 +303,19 @@ export default function MenuPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function MenuPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-[#FFFFEF] min-h-screen flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-[#C7230F]/20 border-t-[#C7230F] rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <MenuContent />
+    </Suspense>
   )
 }

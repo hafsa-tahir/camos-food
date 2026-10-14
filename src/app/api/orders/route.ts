@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       if (dbMatch) {
         if (dbMatch.status !== 'active') {
           return NextResponse.json(
-            { error: `"${dbMatch.name}" is currently OUT OF STOCK. Please remove it from your cart to proceed.` },
+            { error: `"${dbMatch.name}" is currently not available. Please remove it from your cart to proceed.` },
             { status: 400 }
           )
         }
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       if (dbNameMatch) {
         if (dbNameMatch.status !== 'active') {
           return NextResponse.json(
-            { error: `"${dbNameMatch.name}" is currently OUT OF STOCK. Please remove it from your cart to proceed.` },
+            { error: `"${dbNameMatch.name}" is currently not available. Please remove it from your cart to proceed.` },
             { status: 400 }
           )
         }
@@ -134,7 +134,22 @@ export async function POST(request: NextRequest) {
     }
 
     if (foodItems.length !== itemIds.length) {
-      return NextResponse.json({ error: 'Some items in your cart are unavailable or out of stock.' }, { status: 400 })
+      return NextResponse.json({ error: 'Some items in your cart are currently not available.' }, { status: 400 })
+    }
+
+    // Enforce daily schedule: only today's specials, breakfast, or subscriptions allowed
+    const { getDishAvailability } = await import('@/lib/schedule')
+    for (const food of foodItems) {
+      if (food.category === 'subscription') continue
+      const avail = getDishAvailability(food)
+      if (!avail.isAvailableToday) {
+        return NextResponse.json(
+          {
+            error: `"${food.name}" is not available today. It is prepared fresh on ${avail.cookedOnDay || 'its scheduled day'}. Please select today's dishes or breakfast items to proceed.`,
+          },
+          { status: 400 }
+        )
+      }
     }
 
     // Calculate subtotal

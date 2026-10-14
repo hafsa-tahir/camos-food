@@ -6,6 +6,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowLeft,
+  ArrowRight,
+  Calendar,
   Heart,
   ShoppingBag,
   Plus,
@@ -31,6 +33,7 @@ import { useCartStore } from '@/store/cartStore'
 import { useFavoritesStore } from '@/store/favoritesStore'
 import { toast } from 'sonner'
 import { REAL_MENU_ITEMS, enrichFoodItem } from '@/lib/menuData'
+import { getDishAvailability } from '@/lib/schedule'
 
 export default function ProductPage() {
   const params = useParams()
@@ -113,7 +116,18 @@ export default function ProductPage() {
   const carbsPct = totalMacros > 0 ? Math.round((item.carbs_g / totalMacros) * 100) : 50
   const fatPct = totalMacros > 0 ? Math.round((item.fat_g / totalMacros) * 100) : 20
 
+  const availability = item ? getDishAvailability(item) : { isAvailableToday: true, isBreakfast: false, isSpecialToday: false, statusLabel: '', badgeLabel: '' }
+  const isAvailable = availability.isAvailableToday && item.status !== 'inactive'
+
   const add = () => {
+    if (!isAvailable) {
+      toast.info(
+        availability.cookedOnDay
+          ? `"${item.name}" is cooked fresh on ${availability.cookedOnDay}s! Available every ${availability.cookedOnDay}.`
+          : `"${item.name}" is not available today.`
+      )
+      return
+    }
     addItem(item)
     toast.success(`Added ${item.name} to cart${selectedVariant ? ` (${selectedVariant})` : ''}`)
   }
@@ -244,35 +258,70 @@ export default function ProductPage() {
               </div>
             )}
 
-            {/* Add to Cart */}
-            <div className="flex items-center gap-4 mt-2">
-              {qty === 0 ? (
-                <button
-                  onClick={add}
-                  className="inline-flex items-center gap-3 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] px-8 py-4 rounded-full font-black text-sm shadow-lg hover:shadow-xl transition-all cursor-pointer border-none uppercase tracking-wider"
-                >
-                  <ShoppingBag size={18} /> Add to Cart
-                </button>
-              ) : (
-                <div className="h-12 bg-[#C7230F] rounded-full px-3 flex items-center gap-3 shadow-md">
+            {/* Add to Cart or Unavailable Notice */}
+            {!isAvailable ? (
+              <div className="flex flex-col gap-3.5 mt-2">
+                <div className="bg-neutral-100 border-2 border-neutral-300 rounded-2xl p-4 text-left">
+                  <div className="flex items-center gap-2 font-black text-sm text-[#C7230F] mb-1">
+                    <span>⚠️</span>
+                    <span>Not Available for Today's Order</span>
+                  </div>
+                  <p className="text-xs text-neutral-600 font-medium leading-relaxed">
+                    {availability.cookedOnDay
+                      ? `As a home kitchen, this dish is cooked fresh every ${availability.cookedOnDay}. You can order it on ${availability.cookedOnDay}, or subscribe to a weekly meal plan on our Deals page.`
+                      : "This dish is currently not on today's kitchen schedule."}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 flex-wrap">
                   <button
-                    onClick={() => updateQty(item.id, qty - 1)}
-                    className="w-7 h-7 bg-white/20 hover:bg-white/30 rounded-full text-[#FFFFEF] flex items-center justify-center border-none cursor-pointer"
+                    type="button"
+                    disabled
+                    className="inline-flex items-center gap-2 bg-neutral-300 text-neutral-600 px-7 py-3.5 rounded-full font-black text-xs cursor-not-allowed border-none uppercase tracking-wider"
                   >
-                    <Minus size={14} strokeWidth={2.5} />
+                    <Calendar size={15} />
+                    {availability.cookedOnDay ? `Available on ${availability.cookedOnDay}` : 'Not Available Today'}
                   </button>
-                  <span className="text-[#FFFFEF] text-sm font-black min-w-[20px] text-center">
-                    {qty}
-                  </span>
+
+                  <Link
+                    href="/menu"
+                    className="inline-flex items-center gap-2 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] px-6 py-3.5 rounded-full font-black text-xs no-underline uppercase tracking-wider shadow-md transition-all"
+                  >
+                    <span>View Today's Dishes</span>
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4 mt-2">
+                {qty === 0 ? (
                   <button
                     onClick={add}
-                    className="w-7 h-7 bg-[#FFFFEF] rounded-full text-[#C7230F] flex items-center justify-center border-none cursor-pointer font-black"
+                    className="inline-flex items-center gap-3 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] px-8 py-4 rounded-full font-black text-sm shadow-lg hover:shadow-xl transition-all cursor-pointer border-none uppercase tracking-wider"
                   >
-                    <Plus size={14} strokeWidth={2.5} />
+                    <ShoppingBag size={18} /> Add to Cart
                   </button>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="h-12 bg-[#C7230F] rounded-full px-3 flex items-center gap-3 shadow-md">
+                    <button
+                      onClick={() => updateQty(item.id, qty - 1)}
+                      className="w-7 h-7 bg-white/20 hover:bg-white/30 rounded-full text-[#FFFFEF] flex items-center justify-center border-none cursor-pointer"
+                    >
+                      <Minus size={14} strokeWidth={2.5} />
+                    </button>
+                    <span className="text-[#FFFFEF] text-sm font-black min-w-[20px] text-center">
+                      {qty}
+                    </span>
+                    <button
+                      onClick={add}
+                      className="w-7 h-7 bg-[#FFFFEF] rounded-full text-[#C7230F] flex items-center justify-center border-none cursor-pointer font-black"
+                    >
+                      <Plus size={14} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Features Row */}
             <div className="grid grid-cols-3 gap-3 mt-4">

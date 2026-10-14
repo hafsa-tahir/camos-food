@@ -3,28 +3,63 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Sparkles, Truck, ShieldCheck, Clock, Phone, ChefHat, Timer, Moon, Award, UtensilsCrossed, ShoppingBag } from 'lucide-react'
+import {
+  ArrowRight,
+  Sparkles,
+  Truck,
+  ShieldCheck,
+  Clock,
+  Phone,
+  ChefHat,
+  Timer,
+  Moon,
+  Award,
+  UtensilsCrossed,
+  ShoppingBag,
+  Calendar,
+  Flame,
+  Beef,
+  CheckCircle2,
+} from 'lucide-react'
 import { FoodItem } from '@/lib/types'
 import FoodCard from '@/components/ui/FoodCard'
 import { toast } from 'sonner'
+import {
+  WEEKLY_SCHEDULE,
+  getPakistanDayOfWeek,
+  getPakistanFormattedDate,
+  DayOfWeek,
+} from '@/lib/schedule'
+import { REAL_MENU_ITEMS, enrichFoodItem } from '@/lib/menuData'
+import { useCartStore } from '@/store/cartStore'
+import { formatPrice } from '@/lib/utils'
 
 export default function HomepageClient() {
+  const addItem = useCartStore((s) => s.addItem)
   const [popular, setPopular] = useState<FoodItem[]>([])
+  const [allMenu, setAllMenu] = useState<FoodItem[]>([])
+  const [todayDay, setTodayDay] = useState<DayOfWeek>('Monday')
+  const [todayFormatted, setTodayFormatted] = useState('')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState('')
 
   useEffect(() => {
+    setTodayDay(getPakistanDayOfWeek())
+    setTodayFormatted(getPakistanFormattedDate())
+
     setLoading(true)
     setError(null)
-    fetch('/api/menu?featured=true')
+    fetch('/api/menu')
       .then((r) => {
         if (!r.ok) throw new Error('Failed to fetch menu items')
         return r.json()
       })
       .then(({ data }) => {
         if (data?.items && Array.isArray(data.items)) {
-          setPopular(data.items.slice(0, 3))
+          setAllMenu(data.items)
+          const featured = data.items.filter((i: FoodItem) => i.is_featured)
+          setPopular(featured.length > 0 ? featured.slice(0, 3) : data.items.slice(0, 3))
         } else {
           setPopular([])
         }
@@ -44,6 +79,18 @@ export default function HomepageClient() {
     toast.success('Thank you for subscribing!')
     setEmail('')
   }
+
+  const todayPlan = WEEKLY_SCHEDULE[todayDay]
+
+  const resolveItem = (id: string, name: string) => {
+    const fromApi = allMenu.find((i) => i.id === id || i.name.toLowerCase() === name.toLowerCase())
+    if (fromApi) return fromApi
+    const fromReal = REAL_MENU_ITEMS.find((i) => i.id === id || i.name.toLowerCase() === name.toLowerCase())
+    return fromReal ? enrichFoodItem(fromReal) : null
+  }
+
+  const todayDesi = resolveItem(todayPlan.desiDishId, todayPlan.desiDishName)
+  const todayDiet = resolveItem(todayPlan.dietDishId, todayPlan.dietDishName)
 
   return (
     <div className="bg-[#FFFFEF] min-h-screen font-sans text-[#C7230F] overflow-x-hidden relative">
@@ -108,7 +155,6 @@ export default function HomepageClient() {
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
               />
             </div>
-
           </div>
         </main>
 
@@ -138,6 +184,222 @@ export default function HomepageClient() {
           </div>
         </div>
       </div>
+
+      {/* ── TODAY'S FRESH KITCHEN MENU (24-HOUR ROTATING DAILY SPECIALS) ── */}
+      <section className="py-12 md:py-20 bg-[#FFFFEF] border-y-2 border-[#C7230F]/15">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-[50px]">
+          {/* Header */}
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-4 py-2 rounded-full uppercase tracking-wider mb-3 shadow-md">
+              <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
+              <span>LIVE KITCHEN SCHEDULE • {todayFormatted || todayDay}</span>
+            </div>
+            <h2 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl text-[#C7230F] mb-3">
+              Today's Fresh Menu
+            </h2>
+            <p className="text-xs sm:text-sm text-[#C7230F]/80 font-semibold leading-relaxed">
+              As a dedicated home kitchen, our lunch & dinner menu rotates daily so every dish is prepared fresh from scratch on order. Here is what's cooking hot today:
+            </p>
+          </div>
+
+          {/* 2 Main Daily Specials (Desi & Diet) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+            {/* 1. Today's Desi Special */}
+            {todayDesi && (
+              <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <span className="bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                    <span>🍛</span>
+                    <span>TODAY'S DESI SPECIAL</span>
+                  </span>
+                  <span className="text-xs font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-3 py-1 rounded-full uppercase">
+                    Cooked Every {todayDay}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-5 items-center my-2">
+                  <div className="relative w-full sm:w-[140px] h-[140px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#C7230F]/20 shrink-0">
+                    <Image
+                      src={todayDesi.image_url || '/items/chicken-karahi.jpg'}
+                      alt={todayDesi.name}
+                      fill
+                      unoptimized
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+
+                  <div>
+                    <h3 className="font-serif font-black text-2xl text-[#C7230F] leading-tight mb-2">
+                      {todayDesi.name}
+                    </h3>
+                    <p className="text-xs text-[#C7230F]/80 font-medium leading-relaxed mb-3 line-clamp-2">
+                      {todayPlan.desiTagline || todayDesi.description}
+                    </p>
+                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-[#C7230F]">
+                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md">
+                        🔥 {todayDesi.calories} kcal
+                      </span>
+                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md">
+                        💪 {todayDesi.protein_g}g Protein
+                      </span>
+                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md">
+                        ✓ 100% Halal
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-5 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <div className="text-[10px] font-bold text-[#C7230F]/70 uppercase">Price Today</div>
+                    <div className="text-2xl font-black text-[#C7230F] leading-none">
+                      {formatPrice(todayDesi.price)}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <Link
+                      href={`/menu/${todayDesi.id}`}
+                      className="text-xs font-black text-[#C7230F] bg-white border border-[#C7230F]/30 px-4 py-2.5 rounded-full hover:bg-[#FFFFEF] transition-all no-underline"
+                    >
+                      View Dish
+                    </Link>
+                    <button
+                      onClick={() => {
+                        addItem(todayDesi)
+                        toast.success(`Added ${todayDesi.name} to cart!`)
+                      }}
+                      className="inline-flex items-center gap-2 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-6 py-3 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+                    >
+                      <ShoppingBag size={15} /> Order for Today
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Today's Diet Special */}
+            {todayDiet && (
+              <div className="bg-white border-2 border-[#2E7D32] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <span className="bg-[#2E7D32] text-white font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                    <span>🥗</span>
+                    <span>TODAY'S DIET SPECIAL</span>
+                  </span>
+                  <span className="text-xs font-black text-[#2E7D32] bg-[#E8F5E9] border border-[#2E7D32]/30 px-3 py-1 rounded-full uppercase">
+                    Cooked Every {todayDay}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-5 items-center my-2">
+                  <div className="relative w-full sm:w-[140px] h-[140px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#2E7D32]/20 shrink-0">
+                    <Image
+                      src={todayDiet.image_url || '/items/chicken-fajita-rice-bowl.jpg'}
+                      alt={todayDiet.name}
+                      fill
+                      unoptimized
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+
+                  <div>
+                    <h3 className="font-serif font-black text-2xl text-[#C7230F] leading-tight mb-2">
+                      {todayDiet.name}
+                    </h3>
+                    <p className="text-xs text-[#C7230F]/80 font-medium leading-relaxed mb-3 line-clamp-2">
+                      {todayPlan.dietTagline || todayDiet.description}
+                    </p>
+                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-[#2E7D32]">
+                      <span className="bg-[#E8F5E9] border border-[#2E7D32]/20 px-2.5 py-0.5 rounded-md">
+                        🔥 {todayDiet.calories} kcal
+                      </span>
+                      <span className="bg-[#E8F5E9] border border-[#2E7D32]/20 px-2.5 py-0.5 rounded-md">
+                        💪 {todayDiet.protein_g}g Protein
+                      </span>
+                      <span className="bg-[#E8F5E9] border border-[#2E7D32]/20 px-2.5 py-0.5 rounded-md">
+                        ✓ High Protein
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-5 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <div className="text-[10px] font-bold text-[#2E7D32] uppercase">Price Today</div>
+                    <div className="text-2xl font-black text-[#C7230F] leading-none">
+                      {formatPrice(todayDiet.price)}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <Link
+                      href={`/menu/${todayDiet.id}`}
+                      className="text-xs font-black text-[#C7230F] bg-white border border-[#C7230F]/30 px-4 py-2.5 rounded-full hover:bg-[#FFFFEF] transition-all no-underline"
+                    >
+                      View Dish
+                    </Link>
+                    <button
+                      onClick={() => {
+                        addItem(todayDiet)
+                        toast.success(`Added ${todayDiet.name} to cart!`)
+                      }}
+                      className="inline-flex items-center gap-2 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-black text-xs px-6 py-3 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+                    >
+                      <ShoppingBag size={15} /> Order for Today
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Everyday Breakfast Banner */}
+          <div className="bg-white border-2 border-[#C7230F]/20 rounded-[32px] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-md mb-8">
+            <div className="flex items-center gap-5 text-center md:text-left flex-col md:flex-row">
+              <div className="w-16 h-16 rounded-2xl bg-[#C7230F]/10 text-[#C7230F] flex items-center justify-center font-black text-3xl shrink-0 border border-[#C7230F]/20 shadow-xs">
+                🍳
+              </div>
+              <div>
+                <div className="flex items-center gap-2 justify-center md:justify-start mb-1 flex-wrap">
+                  <span className="bg-[#2E7D32] text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    AVAILABLE EVERYDAY
+                  </span>
+                  <span className="text-xs font-bold text-[#C7230F]">
+                    08:00 AM – 11:00 PM
+                  </span>
+                </div>
+                <h3 className="font-serif font-black text-xl sm:text-2xl text-[#C7230F] mb-1">
+                  Desi Breakfast & Steaming Chai
+                </h3>
+                <p className="text-xs text-[#C7230F]/80 font-medium max-w-xl">
+                  Cheese Omelets, Golden French Toast, Layered Paratha Anda Chai, and Stacked Pancakes are freshly cooked and available every day of the week!
+                </p>
+              </div>
+            </div>
+
+            <div className="shrink-0 flex items-center gap-3">
+              <Link
+                href="/menu?category=breakfast"
+                className="bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-7 py-3.5 rounded-full uppercase tracking-wider no-underline shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"
+              >
+                <span>Order Breakfast</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+
+          {/* Weekly Subscriptions Banner Footer */}
+          <div className="text-center">
+            <Link
+              href="/deals"
+              className="inline-flex items-center gap-2 text-xs font-black text-[#C7230F] bg-white border-2 border-[#C7230F]/30 px-6 py-2.5 rounded-full hover:bg-[#C7230F] hover:text-[#FFFFEF] transition-all no-underline shadow-xs uppercase tracking-wider"
+            >
+              <span>Want all 7 days planned? View Weekly Subscriptions on Deals Page</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* ── HOW IT WORKS ── */}
       <section className="py-16 md:py-24 bg-[#FFFFEF]">
