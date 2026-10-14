@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Search, SlidersHorizontal, X, UtensilsCrossed, Calendar, CheckCircle2, Clock, Leaf } from 'lucide-react'
+import { Search, SlidersHorizontal, X, UtensilsCrossed, Calendar, CheckCircle2, Clock, Leaf, Sparkles } from 'lucide-react'
 import { FoodItem, FOOD_CATEGORIES } from '@/lib/types'
 import FoodCard from '@/components/ui/FoodCard'
 import {
@@ -87,11 +87,19 @@ function MenuContent() {
     } else if (sortBy === 'calories_asc') {
       result.sort((a, b) => a.calories - b.calories)
     } else {
-      // Default: Sort items available today first, followed by scheduled items
+      // Default: 1. Today's Specials (Desi & Diet) FIRST, then Daily Breakfast, then other dishes
       result.sort((a, b) => {
-        const availA = getDishAvailability(a, todayDay).isAvailableToday ? 1 : 0
-        const availB = getDishAvailability(b, todayDay).isAvailableToday ? 1 : 0
-        return availB - availA
+        const availA = getDishAvailability(a, todayDay)
+        const availB = getDishAvailability(b, todayDay)
+
+        const priorityA = availA.isSpecialToday ? 3 : availA.isBreakfast ? 2 : 1
+        const priorityB = availB.isSpecialToday ? 3 : availB.isBreakfast ? 2 : 1
+
+        if (priorityB !== priorityA) {
+          return priorityB - priorityA
+        }
+
+        return (a.sort_order ?? 99) - (b.sort_order ?? 99)
       })
     }
 
@@ -158,7 +166,10 @@ function MenuContent() {
           {/* Toggle View Mode */}
           <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
             <button
-              onClick={() => setAvailabilityMode('today_only')}
+              onClick={() => {
+                setAvailabilityMode('today_only')
+                setCategory('all')
+              }}
               className={`flex-1 md:flex-initial px-4 py-2 rounded-full text-xs font-black transition-all border-2 cursor-pointer inline-flex items-center justify-center gap-1.5 ${
                 availabilityMode === 'today_only'
                   ? 'bg-[#C7230F] text-[#FFFFEF] border-[#C7230F] shadow-sm'
@@ -169,7 +180,10 @@ function MenuContent() {
               <span>Available Today ({todayAvailableCount})</span>
             </button>
             <button
-              onClick={() => setAvailabilityMode('all')}
+              onClick={() => {
+                setAvailabilityMode('all')
+                setCategory('all')
+              }}
               className={`flex-1 md:flex-initial px-4 py-2 rounded-full text-xs font-black transition-all border-2 cursor-pointer ${
                 availabilityMode === 'all'
                   ? 'bg-[#C7230F] text-[#FFFFEF] border-[#C7230F] shadow-sm'
@@ -225,13 +239,30 @@ function MenuContent() {
 
         {/* Category Filter Pills */}
         <div className="flex gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
+          <button
+            onClick={() => {
+              setAvailabilityMode('today_only')
+              setCategory('all')
+            }}
+            className={`flex-shrink-0 px-4 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all border-2 inline-flex items-center gap-1.5 cursor-pointer ${
+              availabilityMode === 'today_only' && category === 'all'
+                ? 'bg-[#C7230F] text-[#FFFFEF] border-[#C7230F] shadow-md'
+                : 'bg-white text-[#C7230F] border-[#C7230F]/20 hover:border-[#C7230F]'
+            }`}
+          >
+            <Sparkles size={14} />
+            <span>Today's Menu ({todayAvailableCount})</span>
+          </button>
           {FOOD_CATEGORIES.map((cat) => {
-            const isSelected = category === cat.value
+            const isSelected = availabilityMode === 'all' && category === cat.value
             return (
               <button
                 key={cat.value}
-                onClick={() => setCategory(cat.value)}
-                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all border-2 ${
+                onClick={() => {
+                  setAvailabilityMode('all')
+                  setCategory(cat.value)
+                }}
+                className={`flex-shrink-0 px-4 py-2.5 rounded-full text-xs sm:text-sm font-black transition-all border-2 cursor-pointer ${
                   isSelected
                     ? 'bg-[#C7230F] text-[#FFFFEF] border-[#C7230F] shadow-md'
                     : 'bg-white text-[#C7230F] border-[#C7230F]/20 hover:border-[#C7230F]'
