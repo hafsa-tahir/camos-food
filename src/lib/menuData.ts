@@ -351,15 +351,74 @@ export function enrichFoodItem(rawItem: any): FoodItem {
 
   const rawName = (rawItem.name || '').toLowerCase()
   const rawId = (rawItem.id || '').toLowerCase()
+  const cleanName = rawName.replace(/^camos?\s+|^camo's\s+/i, '').trim()
 
   // Match with local baseline item if possible
-  const matched = REAL_MENU_ITEMS.find(
-    (i) =>
+  const matched = REAL_MENU_ITEMS.find((i) => {
+    const baselineName = i.name.toLowerCase()
+    return (
       i.id.toLowerCase() === rawId ||
-      i.name.toLowerCase() === rawName ||
-      (rawName.length > 3 && i.name.toLowerCase().includes(rawName)) ||
-      (rawName.length > 3 && rawName.includes(i.name.toLowerCase()))
-  )
+      baselineName === rawName ||
+      baselineName === cleanName ||
+      (cleanName.length > 3 && baselineName.includes(cleanName)) ||
+      (cleanName.length > 3 && cleanName.includes(baselineName)) ||
+      (rawName.length > 3 && baselineName.includes(rawName)) ||
+      (rawName.length > 3 && rawName.includes(baselineName))
+    )
+  })
+
+  // Infer correct category (e.g. ensure toast/pancakes/omelet/paratha are 'breakfast')
+  let category = rawItem.category || matched?.category || 'main'
+  if (
+    cleanName.includes('toast') ||
+    cleanName.includes('omelet') ||
+    cleanName.includes('pancake') ||
+    cleanName.includes('paratha')
+  ) {
+    category = 'breakfast'
+  }
+
+  // Smart image mapping to prevent fallback biryani on breakfast/other dishes
+  let image_url = rawItem.image_url || matched?.image_url
+  if (!image_url || image_url === '/hero-plate.jpg') {
+    if (cleanName.includes('french toast') || cleanName.includes('toast')) {
+      image_url = '/items/french-toast.jpg'
+    } else if (cleanName.includes('pancake')) {
+      image_url = '/items/pancakes-chai.jpg'
+    } else if (cleanName.includes('paratha') && cleanName.includes('anda')) {
+      image_url = '/items/paratha-anda-chai.jpg'
+    } else if (cleanName.includes('paratha')) {
+      image_url = '/items/paratha-chai.jpg'
+    } else if (cleanName.includes('omelet')) {
+      image_url = '/items/cheese-omelet.jpg'
+    } else if (cleanName.includes('biryani')) {
+      image_url = '/items/chicken-biryani.jpg'
+    } else if (cleanName.includes('pulao')) {
+      image_url = '/items/chicken-pulao.jpg'
+    } else if (cleanName.includes('karahi')) {
+      image_url = '/items/chicken-karahi.jpg'
+    } else if (cleanName.includes('qeema')) {
+      image_url = '/items/chicken-qeema.jpg'
+    } else if (cleanName.includes('handi')) {
+      image_url = '/items/makhni-handi.jpg'
+    } else if (cleanName.includes('chilli dry')) {
+      image_url = '/items/chicken-chilli-dry.jpg'
+    } else if (cleanName.includes('fajita')) {
+      image_url = '/items/chicken-fajita-rice-bowl.jpg'
+    } else if (cleanName.includes('burger')) {
+      image_url = '/items/high-protein-chicken-burger.jpg'
+    } else if (cleanName.includes('keto wrap')) {
+      image_url = '/items/keto-wrap.jpg'
+    } else if (cleanName.includes('wrap')) {
+      image_url = '/items/high-protein-wrap.jpg'
+    } else if (cleanName.includes('taco')) {
+      image_url = '/items/chicken-tacos.jpg'
+    } else if (cleanName.includes('mac') || cleanName.includes('pasta')) {
+      image_url = '/items/creamy-chicken-pasta.jpg'
+    } else {
+      image_url = matched?.image_url || '/items/french-toast.jpg'
+    }
+  }
 
   const calories = Number(rawItem.calories) || matched?.calories || 500
   let protein_g = Number(rawItem.protein_g) || 0
@@ -382,7 +441,7 @@ export function enrichFoodItem(rawItem: any): FoodItem {
   const ingredients =
     Array.isArray(rawItem.ingredients) && rawItem.ingredients.length > 0
       ? rawItem.ingredients
-      : matched?.ingredients || getDefaultIngredients(rawItem.name || matched?.name || '', rawItem.category || matched?.category || '')
+      : matched?.ingredients || getDefaultIngredients(rawItem.name || matched?.name || '', category)
 
   const allergens =
     Array.isArray(rawItem.allergens) && rawItem.allergens.length > 0
@@ -402,9 +461,9 @@ export function enrichFoodItem(rawItem: any): FoodItem {
     protein_g,
     carbs_g,
     fat_g,
-    category: rawItem.category || matched?.category || 'main',
-    tags: rawItem.tags || matched?.tags || ['halal', 'fresh', 'popular'],
-    image_url: rawItem.image_url || matched?.image_url || '/hero-plate.jpg',
+    category,
+    tags: rawItem.tags && rawItem.tags.length > 0 ? rawItem.tags : matched?.tags || ['halal', 'fresh', 'popular'],
+    image_url,
     status: rawItem.status || matched?.status || 'active',
     is_featured: rawItem.is_featured ?? matched?.is_featured ?? true,
     sort_order: rawItem.sort_order ?? matched?.sort_order ?? 99,
