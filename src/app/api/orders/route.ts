@@ -172,8 +172,12 @@ export async function POST(request: NextRequest) {
         .eq('is_active', true)
         .maybeSingle()
 
-      if (coupon && coupon.owner_id !== user.id && (coupon.times_used || 0) < 1) {
-        const discountPercent = (coupon.friend_discount_percent && coupon.friend_discount_percent > 0) ? coupon.friend_discount_percent : 10
+      if (coupon && (coupon.times_used || 0) < 1) {
+        const isOwner = coupon.owner_id === user.id
+        const discountPercent = isOwner
+          ? (coupon.owner_reward_amount && coupon.owner_reward_amount > 0 ? coupon.owner_reward_amount : 20)
+          : (coupon.friend_discount_percent && coupon.friend_discount_percent > 0 ? coupon.friend_discount_percent : 10)
+
         discountAmount += calcDiscount(subtotal, 'percentage', discountPercent)
         couponId = coupon.id
 
@@ -186,25 +190,27 @@ export async function POST(request: NextRequest) {
           })
           .eq('id', coupon.id)
 
-        // Credit 20% reward to the creator (owner) of this referral key
-        const ownerRewardPercent = (coupon.owner_reward_amount && coupon.owner_reward_amount > 0) ? coupon.owner_reward_amount : 20
-        const ownerRewardCredit = Math.round((subtotal * ownerRewardPercent) / 100)
+        // If a friend redeemed the key, credit 20% reward to the creator (owner) of this referral key
+        if (!isOwner) {
+          const ownerRewardPercent = (coupon.owner_reward_amount && coupon.owner_reward_amount > 0) ? coupon.owner_reward_amount : 20
+          const ownerRewardCredit = Math.round((subtotal * ownerRewardPercent) / 100)
 
-        if (ownerRewardCredit > 0) {
-          const { data: ownerCustomer } = await serviceClient
-            .from('customers')
-            .select('id, account_credit')
-            .eq('id', coupon.owner_id)
-            .maybeSingle()
-
-          if (ownerCustomer) {
-            const currentCredit = Number(ownerCustomer.account_credit || 0)
-            await serviceClient
+          if (ownerRewardCredit > 0) {
+            const { data: ownerCustomer } = await serviceClient
               .from('customers')
-              .update({
-                account_credit: currentCredit + ownerRewardCredit,
-              })
-              .eq('id', ownerCustomer.id)
+              .select('id, account_credit')
+              .eq('id', coupon.owner_id)
+              .maybeSingle()
+
+            if (ownerCustomer) {
+              const currentCredit = Number(ownerCustomer.account_credit || 0)
+              await serviceClient
+                .from('customers')
+                .update({
+                  account_credit: currentCredit + ownerRewardCredit,
+                })
+                .eq('id', ownerCustomer.id)
+            }
           }
         }
       }

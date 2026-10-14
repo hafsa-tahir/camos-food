@@ -89,7 +89,11 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error(data.error || 'Invalid coupon')
 
       setAppliedCoupon(data.data)
-      toast.success(`Coupon applied! Saved PKR ${data.data.discount_amount}. Complete order below to redeem and credit 20% to your referrer!`)
+      toast.success(
+        data.data.is_owner_reward
+          ? `20% Creator Reward Applied! Saved PKR ${data.data.discount_amount} (20% OFF)!`
+          : `Referral code applied! Saved PKR ${data.data.discount_amount} (10% OFF)!`
+      )
     } catch (err: any) {
       toast.error(err.message || 'Could not apply coupon')
       setAppliedCoupon(null)
@@ -432,7 +436,15 @@ export default function CheckoutPage() {
 
                 <button
                   type="button"
-                  onClick={() => setUseRewardCredit(!useRewardCredit)}
+                  onClick={() => {
+                    const next = !useRewardCredit
+                    setUseRewardCredit(next)
+                    if (next) {
+                      toast.success(`Applied PKR ${Math.min(availableRewardCredit, remainingBeforeRewards)} from Rewards!`)
+                    } else {
+                      toast.info('Removed Rewards credit from order.')
+                    }
+                  }}
                   style={{
                     backgroundColor: useRewardCredit ? '#C7230F' : '#FFFFEF',
                     color: useRewardCredit ? '#FFFFEF' : '#C7230F',
@@ -460,7 +472,7 @@ export default function CheckoutPage() {
                   <h2 className="font-extrabold text-lg text-[#C7230F]">
                     Promo or Referral Code
                   </h2>
-                  <p className="text-xs font-bold text-[#C7230F]/70">Enter your code to get 10% OFF your order</p>
+                  <p className="text-xs font-bold text-[#C7230F]/70">Enter code for 10% friend discount or your 20% creator reward</p>
                 </div>
               </div>
 
@@ -486,14 +498,16 @@ export default function CheckoutPage() {
                 <div className="mt-3 bg-[#FFFFEF] p-4 rounded-xl border border-[#C7230F]/30 space-y-1.5">
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-extrabold text-[#C7230F]">
-                      Code '{appliedCoupon.code}' Applied! (10% OFF)
+                      Code '{appliedCoupon.code}' Applied! ({appliedCoupon.discount_percent}% OFF{appliedCoupon.is_owner_reward ? ' • 20% Owner Reward' : ''})
                     </span>
                     <span className="font-black text-[#C7230F]">
                       - PKR {appliedCoupon.discount_amount}
                     </span>
                   </div>
                   <p className="text-[11px] text-[#C7230F]/80 font-bold leading-normal">
-                    Single-use referral key: when you click "Place Order" below, this key will be marked as REDEEMED and your referrer will receive their 20% reward points!
+                    {appliedCoupon.is_owner_reward
+                      ? '✓ Your 20% Creator Reward has been deducted directly from your payable order total!'
+                      : 'Single-use referral key: when you click "Place Order" below, this key will be marked as REDEEMED and your referrer will receive their 20% reward points!'}
                   </p>
                 </div>
               )}
@@ -547,7 +561,9 @@ export default function CheckoutPage() {
 
               {appliedCoupon && (
                 <div className="flex justify-between text-[#C7230F] font-extrabold">
-                  <span>Discount ({appliedCoupon.code})</span>
+                  <span>
+                    Discount ({appliedCoupon.code} • {appliedCoupon.discount_percent}%{appliedCoupon.is_owner_reward ? ' Reward' : ''})
+                  </span>
                   <span className="font-black">- {formatPrice(appliedCoupon.discount_amount)}</span>
                 </div>
               )}

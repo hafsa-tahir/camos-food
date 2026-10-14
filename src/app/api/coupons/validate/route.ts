@@ -41,18 +41,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 4. Prevent self-referral ONLY if the logged-in user is the code owner
-    if (user && coupon.owner_id && coupon.owner_id === user.id) {
-      return NextResponse.json(
-        { error: 'You cannot use your own referral code. Share it with a friend!' },
-        { status: 400 }
-      )
-    }
+    // 4. Check if the logged-in user is the code owner
+    const isOwner = !!(user && coupon.owner_id && coupon.owner_id === user.id)
 
-    // 5. Calculate discount
-    const discountPercent = (coupon.friend_discount_percent && coupon.friend_discount_percent > 0)
-      ? coupon.friend_discount_percent
-      : 10
+    // 5. Calculate discount:
+    // If owner uses their own code, they receive their full 20% Owner Reward Discount directly!
+    // If friend uses it, they receive 10% Friend Discount!
+    const discountPercent = isOwner
+      ? (coupon.owner_reward_amount && coupon.owner_reward_amount > 0 ? coupon.owner_reward_amount : 20)
+      : (coupon.friend_discount_percent && coupon.friend_discount_percent > 0 ? coupon.friend_discount_percent : 10)
+
     const discountAmount = Math.round((subtotal * discountPercent) / 100)
 
     return NextResponse.json({
@@ -61,10 +59,12 @@ export async function POST(request: NextRequest) {
         code: coupon.code,
         discount_percent: discountPercent,
         discount_amount: discountAmount,
-        owner_reward_percent: coupon.owner_reward_amount || 20,
+        is_owner_reward: isOwner,
         used_for: 'order',
       },
-      message: `Referral code ${coupon.code} applied! Saved 10% (PKR ${discountAmount})!`,
+      message: isOwner
+        ? `Your 20% Reward Applied! Saved 20% (PKR ${discountAmount})!`
+        : `Referral code ${coupon.code} applied! Saved 10% (PKR ${discountAmount})!`,
     })
   } catch (err: any) {
     console.error('Coupon validation error:', err)
