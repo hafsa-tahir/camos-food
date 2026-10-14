@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Heart, ShoppingBag, Plus, Minus, Calendar } from 'lucide-react'
+import { Heart, ShoppingBag, Plus, Minus, Calendar, Coffee, Sparkles, CheckCircle2 } from 'lucide-react'
 import { FoodItem } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 import { useCartStore } from '@/store/cartStore'
@@ -74,12 +74,14 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
 
               {/* Special / Breakfast / Category Badge */}
               {availability.isSpecialToday ? (
-                <span className="bg-[#C7230F] text-[#FFFFEF] text-[11px] font-black px-3 py-1.5 rounded-xl shadow-xs uppercase tracking-wide">
-                  ✦ {availability.badgeLabel}
+                <span className="bg-[#C7230F] text-[#FFFFEF] text-[11px] font-black px-3 py-1.5 rounded-xl shadow-xs uppercase tracking-wide flex items-center gap-1.5">
+                  <Sparkles size={11} />
+                  <span>{availability.badgeLabel}</span>
                 </span>
               ) : availability.isBreakfast ? (
-                <span className="bg-[#2E7D32] text-white text-[11px] font-black px-3 py-1.5 rounded-xl shadow-xs uppercase tracking-wide">
-                  🍳 Daily Breakfast
+                <span className="bg-[#C7230F] text-[#FFFFEF] text-[11px] font-black px-3 py-1.5 rounded-xl shadow-xs uppercase tracking-wide flex items-center gap-1.5">
+                  <Coffee size={11} />
+                  <span>Daily Breakfast</span>
                 </span>
               ) : (
                 <span className="bg-[#FFFFEF] text-[#C7230F] text-xs font-extrabold px-3 py-1.5 rounded-xl border border-[#C7230F]/20 shadow-xs capitalize">
@@ -207,16 +209,19 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
                 CAMO'S · {item.category || 'SPECIAL'}
               </span>
               {availability.isSpecialToday ? (
-                <span className="text-[10px] font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-2 py-0.5 rounded-md">
-                  🟢 Available Today
+                <span className="text-[10px] font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <CheckCircle2 size={11} />
+                  <span>Available Today</span>
                 </span>
               ) : availability.isBreakfast ? (
-                <span className="text-[10px] font-black text-[#2E7D32] bg-[#2E7D32]/10 border border-[#2E7D32]/30 px-2 py-0.5 rounded-md">
-                  🍳 Fresh Daily
+                <span className="text-[10px] font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <Coffee size={11} />
+                  <span>Fresh Daily</span>
                 </span>
               ) : availability.cookedOnDay ? (
-                <span className="text-[10px] font-black text-neutral-600 bg-neutral-100 border border-neutral-300 px-2 py-0.5 rounded-md">
-                  📅 {availability.cookedOnDay}
+                <span className="text-[10px] font-black text-neutral-600 bg-neutral-100 border border-neutral-300 px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <Calendar size={11} />
+                  <span>{availability.cookedOnDay}</span>
                 </span>
               ) : null}
             </div>

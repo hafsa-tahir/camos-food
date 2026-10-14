@@ -263,7 +263,7 @@ export default function ProductPage() {
               <div className="flex flex-col gap-3.5 mt-2">
                 <div className="bg-neutral-100 border-2 border-neutral-300 rounded-2xl p-4 text-left">
                   <div className="flex items-center gap-2 font-black text-sm text-[#C7230F] mb-1">
-                    <span>⚠️</span>
+                    <Clock size={16} className="text-[#C7230F]" />
                     <span>Not Available for Today's Order</span>
                   </div>
                   <p className="text-xs text-neutral-600 font-medium leading-relaxed">

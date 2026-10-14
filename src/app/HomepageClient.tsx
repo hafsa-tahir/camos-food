@@ -20,6 +20,10 @@ import {
   Flame,
   Beef,
   CheckCircle2,
+  Leaf,
+  Dumbbell,
+  Check,
+  Coffee,
 } from 'lucide-react'
 import { FoodItem } from '@/lib/types'
 import FoodCard from '@/components/ui/FoodCard'
@@ -191,8 +195,8 @@ export default function HomepageClient() {
           {/* Header */}
           <div className="text-center max-w-2xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-4 py-2 rounded-full uppercase tracking-wider mb-3 shadow-md">
-              <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
-              <span>LIVE KITCHEN SCHEDULE • {todayFormatted || todayDay}</span>
+              <Clock size={13} className="text-[#FFFFEF]" />
+              <span>TODAY'S KITCHEN SCHEDULE • {todayFormatted || todayDay}</span>
             </div>
             <h2 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl text-[#C7230F] mb-3">
               Today's Fresh Menu
@@ -209,11 +213,12 @@ export default function HomepageClient() {
               <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <span className="bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
-                    <span>🍛</span>
+                    <UtensilsCrossed size={13} />
                     <span>TODAY'S DESI SPECIAL</span>
                   </span>
-                  <span className="text-xs font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-3 py-1 rounded-full uppercase">
-                    Cooked Every {todayDay}
+                  <span className="text-xs font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-3 py-1 rounded-full uppercase flex items-center gap-1">
+                    <Calendar size={12} />
+                    <span>Cooked Every {todayDay}</span>
                   </span>
                 </div>
 
@@ -236,14 +241,14 @@ export default function HomepageClient() {
                       {todayPlan.desiTagline || todayDesi.description}
                     </p>
                     <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-[#C7230F]">
-                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md">
-                        🔥 {todayDesi.calories} kcal
+                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                        <Flame size={12} /> {todayDesi.calories} kcal
                       </span>
-                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md">
-                        💪 {todayDesi.protein_g}g Protein
+                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                        <Dumbbell size={12} /> {todayDesi.protein_g}g Protein
                       </span>
-                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md">
-                        ✓ 100% Halal
+                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                        <Check size={12} /> 100% Halal
                       </span>
                     </div>
                   </div>
@@ -278,21 +283,22 @@ export default function HomepageClient() {
               </div>
             )}
 
-            {/* 2. Today's Diet Special */}
+            {/* 2. Today's Diet Special (Brand Crimson & Off-White Palette - No Green!) */}
             {todayDiet && (
-              <div className="bg-white border-2 border-[#2E7D32] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+              <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
                 <div className="flex items-center justify-between gap-2 mb-4">
-                  <span className="bg-[#2E7D32] text-white font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
-                    <span>🥗</span>
+                  <span className="bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                    <Leaf size={13} />
                     <span>TODAY'S DIET SPECIAL</span>
                   </span>
-                  <span className="text-xs font-black text-[#2E7D32] bg-[#E8F5E9] border border-[#2E7D32]/30 px-3 py-1 rounded-full uppercase">
-                    Cooked Every {todayDay}
+                  <span className="text-xs font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-3 py-1 rounded-full uppercase flex items-center gap-1">
+                    <Calendar size={12} />
+                    <span>Cooked Every {todayDay}</span>
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-5 items-center my-2">
-                  <div className="relative w-full sm:w-[140px] h-[140px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#2E7D32]/20 shrink-0">
+                  <div className="relative w-full sm:w-[140px] h-[140px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#C7230F]/20 shrink-0">
                     <Image
                       src={todayDiet.image_url || '/items/chicken-fajita-rice-bowl.jpg'}
                       alt={todayDiet.name}
@@ -309,15 +315,15 @@ export default function HomepageClient() {
                     <p className="text-xs text-[#C7230F]/80 font-medium leading-relaxed mb-3 line-clamp-2">
                       {todayPlan.dietTagline || todayDiet.description}
                     </p>
-                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-[#2E7D32]">
-                      <span className="bg-[#E8F5E9] border border-[#2E7D32]/20 px-2.5 py-0.5 rounded-md">
-                        🔥 {todayDiet.calories} kcal
+                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-[#C7230F]">
+                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                        <Flame size={12} /> {todayDiet.calories} kcal
                       </span>
-                      <span className="bg-[#E8F5E9] border border-[#2E7D32]/20 px-2.5 py-0.5 rounded-md">
-                        💪 {todayDiet.protein_g}g Protein
+                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                        <Dumbbell size={12} /> {todayDiet.protein_g}g Protein
                       </span>
-                      <span className="bg-[#E8F5E9] border border-[#2E7D32]/20 px-2.5 py-0.5 rounded-md">
-                        ✓ High Protein
+                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
+                        <Check size={12} /> High Protein
                       </span>
                     </div>
                   </div>
@@ -325,7 +331,7 @@ export default function HomepageClient() {
 
                 <div className="mt-6 pt-5 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    <div className="text-[10px] font-bold text-[#2E7D32] uppercase">Price Today</div>
+                    <div className="text-[10px] font-bold text-[#C7230F]/70 uppercase">Price Today</div>
                     <div className="text-2xl font-black text-[#C7230F] leading-none">
                       {formatPrice(todayDiet.price)}
                     </div>
@@ -343,7 +349,7 @@ export default function HomepageClient() {
                         addItem(todayDiet)
                         toast.success(`Added ${todayDiet.name} to cart!`)
                       }}
-                      className="inline-flex items-center gap-2 bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-black text-xs px-6 py-3 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+                      className="inline-flex items-center gap-2 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-6 py-3 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
                     >
                       <ShoppingBag size={15} /> Order for Today
                     </button>
@@ -353,16 +359,16 @@ export default function HomepageClient() {
             )}
           </div>
 
-          {/* Everyday Breakfast Banner */}
+          {/* Everyday Breakfast Banner (Crimson & Off-White Palette) */}
           <div className="bg-white border-2 border-[#C7230F]/20 rounded-[32px] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-md mb-8">
             <div className="flex items-center gap-5 text-center md:text-left flex-col md:flex-row">
-              <div className="w-16 h-16 rounded-2xl bg-[#C7230F]/10 text-[#C7230F] flex items-center justify-center font-black text-3xl shrink-0 border border-[#C7230F]/20 shadow-xs">
-                🍳
+              <div className="w-16 h-16 rounded-2xl bg-[#C7230F]/10 text-[#C7230F] flex items-center justify-center font-black text-2xl shrink-0 border border-[#C7230F]/20 shadow-xs">
+                <Coffee size={28} className="text-[#C7230F]" />
               </div>
               <div>
                 <div className="flex items-center gap-2 justify-center md:justify-start mb-1 flex-wrap">
-                  <span className="bg-[#2E7D32] text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    AVAILABLE EVERYDAY
+                  <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    AVAILABLE DAILY
                   </span>
                   <span className="text-xs font-bold text-[#C7230F]">
                     08:00 AM – 11:00 PM

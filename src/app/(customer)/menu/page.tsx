@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Search, SlidersHorizontal, X, UtensilsCrossed, Calendar, CheckCircle2, Clock } from 'lucide-react'
+import { Search, SlidersHorizontal, X, UtensilsCrossed, Calendar, CheckCircle2, Clock, Leaf } from 'lucide-react'
 import { FoodItem, FOOD_CATEGORIES } from '@/lib/types'
 import FoodCard from '@/components/ui/FoodCard'
 import {
@@ -132,18 +132,20 @@ function MenuContent() {
         {/* Daily Schedule Notice Banner */}
         <div className="bg-white border-2 border-[#C7230F]/20 rounded-3xl p-5 mb-8 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-[#C7230F]/10 text-[#C7230F] flex items-center justify-center font-black text-2xl shrink-0">
-              📅
+            <div className="w-12 h-12 rounded-2xl bg-[#C7230F]/10 text-[#C7230F] flex items-center justify-center font-black shrink-0">
+              <Calendar size={22} className="text-[#C7230F]" />
             </div>
             <div>
               <div className="font-extrabold text-sm text-[#C7230F] flex items-center gap-2 flex-wrap">
                 <span>Cooking Today ({todayDay}):</span>
-                <span className="bg-[#C7230F]/10 px-2.5 py-0.5 rounded-lg text-xs font-black">
-                  🍛 {todayPlan.desiDishName}
+                <span className="bg-[#C7230F]/10 text-[#C7230F] px-2.5 py-0.5 rounded-lg text-xs font-black inline-flex items-center gap-1.5">
+                  <UtensilsCrossed size={12} />
+                  <span>{todayPlan.desiDishName}</span>
                 </span>
                 <span>&</span>
-                <span className="bg-[#2E7D32]/10 text-[#2E7D32] px-2.5 py-0.5 rounded-lg text-xs font-black">
-                  🥗 {todayPlan.dietDishName}
+                <span className="bg-[#C7230F]/10 text-[#C7230F] px-2.5 py-0.5 rounded-lg text-xs font-black inline-flex items-center gap-1.5">
+                  <Leaf size={12} />
+                  <span>{todayPlan.dietDishName}</span>
                 </span>
                 <span>+ All Breakfast</span>
               </div>
@@ -157,13 +159,14 @@ function MenuContent() {
           <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
             <button
               onClick={() => setAvailabilityMode('today_only')}
-              className={`flex-1 md:flex-initial px-4 py-2 rounded-full text-xs font-black transition-all border-2 cursor-pointer ${
+              className={`flex-1 md:flex-initial px-4 py-2 rounded-full text-xs font-black transition-all border-2 cursor-pointer inline-flex items-center justify-center gap-1.5 ${
                 availabilityMode === 'today_only'
                   ? 'bg-[#C7230F] text-[#FFFFEF] border-[#C7230F] shadow-sm'
                   : 'bg-[#FFFFEF] text-[#C7230F] border-[#C7230F]/30 hover:border-[#C7230F]'
               }`}
             >
-              🟢 Available Today ({todayAvailableCount})
+              <CheckCircle2 size={13} />
+              <span>Available Today ({todayAvailableCount})</span>
             </button>
             <button
               onClick={() => setAvailabilityMode('all')}
@@ -251,8 +254,16 @@ function MenuContent() {
                 ` in ${FOOD_CATEGORIES.find((c) => c.value === category)?.label}`}
             </div>
             {availabilityMode === 'all' && (
-              <div className="text-[11px] font-semibold text-[#C7230F]/70">
-                🟢 Available Today: {todayAvailableCount} | 📅 Scheduled for other days: {items.length - todayAvailableCount}
+              <div className="text-[11px] font-semibold text-[#C7230F]/70 flex items-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1 text-[#C7230F]">
+                  <CheckCircle2 size={12} />
+                  <span>Available Today: {todayAvailableCount}</span>
+                </span>
+                <span>•</span>
+                <span className="inline-flex items-center gap-1 text-neutral-600">
+                  <Calendar size={12} />
+                  <span>Scheduled for other days: {items.length - todayAvailableCount}</span>
+                </span>
               </div>
             )}
           </div>
