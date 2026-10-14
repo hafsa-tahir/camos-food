@@ -51,10 +51,10 @@ export default function FavoritesPage() {
           {favorites.length > 0 && (
             <button
               onClick={clearFavorites}
-              className="inline-flex items-center gap-2 text-xs font-black text-[#C7230F] bg-white border border-[#C7230F]/25 px-4 py-2.5 rounded-xl hover:bg-[#C7230F] hover:text-[#FFFFEF] transition-colors cursor-pointer self-start md:self-auto shadow-xs"
+              className="group inline-flex items-center gap-2 text-xs font-black text-[#C7230F] bg-white border border-[#C7230F]/25 px-4 py-2.5 rounded-xl hover:bg-[#C7230F] hover:text-[#FFFFEF] transition-colors cursor-pointer self-start md:self-auto shadow-xs"
             >
-              <Trash2 size={14} />
-              <span>Clear All Favorites</span>
+              <Trash2 size={14} className="group-hover:text-[#FFFFEF] transition-colors" />
+              <span className="group-hover:text-[#FFFFEF] transition-colors">Clear All Favorites</span>
             </button>
           )}
         </div>

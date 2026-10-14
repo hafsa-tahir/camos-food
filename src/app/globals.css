@@ -23,22 +23,43 @@
   --font-serif:       'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
-/* Contrast Utility Classes */
-.bg-crimson { background-color: #C7230F !important; }
-.bg-crimson-dark { background-color: #A31C0C !important; }
-.text-crimson { color: #C7230F !important; }
+/* Contrast Utility Classes (without !important so hover states work naturally) */
+.bg-crimson { background-color: #C7230F; }
+.bg-crimson-dark { background-color: #A31C0C; }
+.text-crimson { color: #C7230F; }
 
-.bg-offwhite { background-color: #FAFAFA !important; }
-.text-offwhite { color: #FAFAFA !important; }
+.bg-offwhite { background-color: #FAFAFA; }
+.text-offwhite { color: #FAFAFA; }
 
-/* Custom Arbitrary Class Overrides for Tailwind v4 compatibility */
-.bg-\[\#C7230F\] { background-color: #C7230F !important; }
-.bg-\[\#A31C0C\] { background-color: #A31C0C !important; }
-.bg-\[\#FFFFEF\] { background-color: #FAFAFA !important; }
-.text-\[\#C7230F\] { color: #C7230F !important; }
-.text-\[\#FFFFEF\] { color: #FFFFFF !important; }
-.border-\[\#C7230F\] { border-color: #C7230F !important; }
-.border-\[\#FFFFEF\] { border-color: #FAFAFA !important; }
+/* Ensure hover states override text and background colors cleanly */
+.hover\:text-\[\#FFFFEF\]:hover,
+.hover\:text-white:hover {
+  color: #FFFFEF !important;
+}
+
+.hover\:text-\[\#C7230F\]:hover {
+  color: #C7230F !important;
+}
+
+.hover\:bg-\[\#C7230F\]:hover {
+  background-color: #C7230F !important;
+}
+
+.hover\:bg-\[\#A31C0C\]:hover {
+  background-color: #A31C0C !important;
+}
+
+.hover\:bg-\[\#FFFFEF\]:hover {
+  background-color: #FFFFEF !important;
+}
+
+.group:hover .group-hover\:text-\[\#FFFFEF\] {
+  color: #FFFFEF !important;
+}
+
+.group:hover .group-hover\:bg-\[\#C7230F\] {
+  background-color: #C7230F !important;
+}
 
 
 /* ── Global Reset & Font Enforcement ── */

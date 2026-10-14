@@ -398,10 +398,10 @@ export default function HomepageClient() {
           <div className="text-center">
             <Link
               href="/deals"
-              className="inline-flex items-center gap-2 text-xs font-black text-[#C7230F] bg-white border-2 border-[#C7230F]/30 px-6 py-2.5 rounded-full hover:bg-[#C7230F] hover:text-[#FFFFEF] transition-all no-underline shadow-xs uppercase tracking-wider"
+              className="group inline-flex items-center gap-2 text-xs font-black text-[#C7230F] bg-white border-2 border-[#C7230F]/30 px-6 py-2.5 rounded-full hover:bg-[#C7230F] hover:text-[#FFFFEF] transition-all no-underline shadow-xs uppercase tracking-wider"
             >
-              <span>Want all 7 days planned? View Weekly Subscriptions on Deals Page</span>
-              <ArrowRight size={14} />
+              <span className="group-hover:text-[#FFFFEF] transition-colors">Want all 7 days planned? View Weekly Subscriptions on Deals Page</span>
+              <ArrowRight size={14} className="group-hover:text-[#FFFFEF] transition-colors" />
             </Link>
           </div>
         </div>
