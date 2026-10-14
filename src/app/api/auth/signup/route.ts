@@ -17,7 +17,12 @@ const signupSchema = z.object({
   restrictions: z.array(z.string()).optional(),
 })
 
-const ADMIN_EMAILS = ['camosfoodapp@gmail.com', 'camosfoodapp@gamil.com', 'admin@camosfoods.com']
+const ADMIN_EMAILS = [
+  process.env.ADMIN_EMAIL?.toLowerCase(),
+  'camosfoodapp@gmail.com',
+  'camosfoodapp@gamil.com',
+  'admin@camosfoods.com',
+].filter(Boolean) as string[]
 const ADMIN_PASSWORD = process.env.ADMIN_SECRET_KEY
 
 export async function POST(request: NextRequest) {
