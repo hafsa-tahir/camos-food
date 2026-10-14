@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { calculateDailyCalories } from '@/lib/utils'
 import { z } from 'zod'
 
@@ -24,9 +24,10 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  const serviceClient = await createServiceClient()
   const [{ data: customer }, { data: dietProfile }] = await Promise.all([
-    supabase.from('customers').select('*').eq('id', user.id).single(),
-    supabase.from('diet_profiles').select('*').eq('customer_id', user.id).single(),
+    serviceClient.from('customers').select('*').eq('id', user.id).maybeSingle(),
+    serviceClient.from('diet_profiles').select('*').eq('customer_id', user.id).maybeSingle(),
   ])
 
   return NextResponse.json({ data: { customer, diet_profile: dietProfile } })

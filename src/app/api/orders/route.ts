@@ -14,6 +14,7 @@ const orderSchema = z.object({
   deal_id: z.string().min(1).optional(),
   delivery_address: z.string().optional(),
   notes: z.string().optional(),
+  reward_credit_used: z.number().min(0).optional(),
 })
 
 function calcDiscount(subtotal: number, type: 'percentage' | 'flat', value: number, max?: number | null): number {
@@ -184,6 +185,28 @@ export async function POST(request: NextRequest) {
             is_active: false,
           })
           .eq('id', coupon.id)
+
+        // Credit 20% reward to the creator (owner) of this referral key
+        const ownerRewardPercent = (coupon.owner_reward_amount && coupon.owner_reward_amount > 0) ? coupon.owner_reward_amount : 20
+        const ownerRewardCredit = Math.round((subtotal * ownerRewardPercent) / 100)
+
+        if (ownerRewardCredit > 0) {
+          const { data: ownerCustomer } = await serviceClient
+            .from('customers')
+            .select('id, account_credit')
+            .eq('id', coupon.owner_id)
+            .maybeSingle()
+
+          if (ownerCustomer) {
+            const currentCredit = Number(ownerCustomer.account_credit || 0)
+            await serviceClient
+              .from('customers')
+              .update({
+                account_credit: currentCredit + ownerRewardCredit,
+              })
+              .eq('id', ownerCustomer.id)
+          }
+        }
       }
     }
 
@@ -202,8 +225,34 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Apply customer's earned reward credit / points if requested
+    let appliedRewardCredit = 0
+    if (parsed.reward_credit_used && parsed.reward_credit_used > 0) {
+      const { data: buyerCust } = await serviceClient
+        .from('customers')
+        .select('id, account_credit')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      const userCredit = Number(buyerCust?.account_credit || 0)
+      if (userCredit > 0) {
+        const remainingToPay = Math.max(0, subtotal - discountAmount)
+        appliedRewardCredit = Math.min(parsed.reward_credit_used, userCredit, remainingToPay)
+
+        if (appliedRewardCredit > 0) {
+          discountAmount += appliedRewardCredit
+          await serviceClient
+            .from('customers')
+            .update({
+              account_credit: Math.max(0, userCredit - appliedRewardCredit),
+            })
+            .eq('id', user.id)
+        }
+      }
+    }
+
     discountAmount = Math.min(discountAmount, subtotal)
-    const total = subtotal - discountAmount
+    const total = Math.max(0, subtotal - discountAmount)
 
     // Ensure customer profile exists in customers table satisfied
     const { data: existingCust } = await serviceClient.from('customers').select('id').eq('id', user.id).maybeSingle()
@@ -213,6 +262,11 @@ export async function POST(request: NextRequest) {
         name: user.user_metadata?.name || user.email?.split('@')[0] || 'Customer',
         email: user.email || 'customer@camosfoods.com',
       })
+    }
+
+    let finalNotes = parsed.notes || ''
+    if (appliedRewardCredit > 0) {
+      finalNotes = `${finalNotes} [Applied PKR ${appliedRewardCredit} Reward Points]`.trim()
     }
 
     // Create order in DB using serviceClient (bypasses RLS)
@@ -225,9 +279,9 @@ export async function POST(request: NextRequest) {
         subtotal,
         discount_amount: discountAmount,
         total,
-        status: 'pending',
+        status: total === 0 ? 'paid' : 'pending',
         delivery_address: parsed.delivery_address,
-        notes: parsed.notes,
+        notes: finalNotes,
       })
       .select()
       .single()
@@ -298,7 +352,7 @@ export async function POST(request: NextRequest) {
 
     let checkoutUrl: string | null = null
 
-    if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('sk_')) {
+    if (total > 0 && process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('sk_')) {
       try {
         const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = parsed.items.map((cartItem) => {
           const food = foodItems.find((f) => f.id === cartItem.food_item_id)!

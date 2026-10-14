@@ -33,8 +33,18 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    return NextResponse.json({ data: data || [] })
+    // Fetch customer's latest reward balance / credit
+    const { data: customer } = await serviceClient
+      .from('customers')
+      .select('account_credit')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    return NextResponse.json({
+      data: data || [],
+      account_credit: Number(customer?.account_credit || 0),
+    })
   } catch (err: any) {
-    return NextResponse.json({ data: [] })
+    return NextResponse.json({ data: [], account_credit: 0 })
   }
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useCartStore } from '@/store/cartStore'
 import { useRouter } from 'next/navigation'
-import { ArrowRight, MapPin, Tag, ShieldCheck, ShoppingBag, CreditCard, Banknote, QrCode, Copy, Check, Upload } from 'lucide-react'
+import { ArrowRight, MapPin, Tag, ShieldCheck, ShoppingBag, CreditCard, Banknote, QrCode, Copy, Check, Upload, Sparkles } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
@@ -30,6 +30,7 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
   const [validatingCoupon, setValidatingCoupon] = useState(false)
+  const [useRewardCredit, setUseRewardCredit] = useState(false)
   const [loadingOrder, setLoadingOrder] = useState(false)
 
   const jazzcashNumber = '03040266618'
@@ -88,7 +89,7 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error(data.error || 'Invalid coupon')
 
       setAppliedCoupon(data.data)
-      toast.success(`Coupon applied! Saved PKR ${data.data.discount_amount}`)
+      toast.success(`Coupon applied! Saved PKR ${data.data.discount_amount}. Complete order below to redeem and credit 20% to your referrer!`)
     } catch (err: any) {
       toast.error(err.message || 'Could not apply coupon')
       setAppliedCoupon(null)
@@ -97,7 +98,11 @@ export default function CheckoutPage() {
     }
   }
 
-  const finalTotal = appliedCoupon ? Math.max(0, total - appliedCoupon.discount_amount) : total
+  const couponDiscount = appliedCoupon ? appliedCoupon.discount_amount : 0
+  const remainingBeforeRewards = Math.max(0, total - couponDiscount)
+  const availableRewardCredit = Number(user?.account_credit || 0)
+  const rewardCreditToUse = useRewardCredit ? Math.min(availableRewardCredit, remainingBeforeRewards) : 0
+  const finalTotal = Math.max(0, remainingBeforeRewards - rewardCreditToUse)
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -112,7 +117,7 @@ export default function CheckoutPage() {
       return
     }
 
-    if (paymentMethod === 'jazzcash') {
+    if (finalTotal > 0 && paymentMethod === 'jazzcash') {
       if (!transactionId.trim()) {
         toast.error('Please enter your 12-digit JazzCash Transaction ID (TID)')
         return
@@ -126,16 +131,23 @@ export default function CheckoutPage() {
     setLoadingOrder(true)
 
     try {
+      const paymentLabel = finalTotal === 0
+        ? 'Paid Completely With Camo Reward Points'
+        : paymentMethod === 'jazzcash'
+        ? 'JazzCash Direct Transfer'
+        : 'Cash on Delivery (COD)'
+
       const payload = {
         items: items.map((i) => ({
           food_item_id: i.food_item.id,
           quantity: i.quantity,
         })),
         delivery_address: address,
-        notes: `[Payment Method: ${paymentMethod === 'jazzcash' ? 'JazzCash Direct' : 'Cash on Delivery (COD)'}] ${
-          paymentMethod === 'jazzcash' ? `(JazzCash TID: ${transactionId.trim()})` : ''
+        notes: `[Payment Method: ${paymentLabel}] ${
+          finalTotal > 0 && paymentMethod === 'jazzcash' ? `(JazzCash TID: ${transactionId.trim()})` : ''
         } ${notes.trim()}`,
         ...(appliedCoupon ? { coupon_code: appliedCoupon.code } : {}),
+        ...(rewardCreditToUse > 0 ? { reward_credit_used: rewardCreditToUse } : {}),
       }
 
       const res = await fetch('/api/orders', {
@@ -148,7 +160,9 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to place order')
 
       toast.success(
-        paymentMethod === 'jazzcash'
+        finalTotal === 0
+          ? 'Order placed and paid entirely with your Camo Reward Points!'
+          : paymentMethod === 'jazzcash'
           ? 'Order placed! JazzCash payment proof submitted for verification.'
           : 'Order placed successfully! Cash on delivery.'
       )
@@ -393,6 +407,49 @@ export default function CheckoutPage() {
               )}
             </div>
 
+            {/* Camo's Reward Points Card (Spend Rewards) */}
+            {availableRewardCredit > 0 && (
+              <div className="bg-white rounded-3xl p-6 border-2 border-[#C7230F] shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-[#C7230F] text-[#FFFFEF] flex items-center justify-center">
+                      <Sparkles size={20} />
+                    </div>
+                    <div>
+                      <h2 className="font-extrabold text-base text-[#C7230F]">
+                        Camo's Reward Points Available
+                      </h2>
+                      <p className="text-xs font-bold text-[#C7230F]/70">
+                        Balance: <strong className="text-[#C7230F] font-black">PKR {availableRewardCredit}</strong>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs font-bold text-[#C7230F]/80 mb-4 leading-relaxed">
+                  You earned PKR {availableRewardCredit} in reward points from friend referrals! Apply your rewards directly as a cash discount on this order.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setUseRewardCredit(!useRewardCredit)}
+                  style={{
+                    backgroundColor: useRewardCredit ? '#C7230F' : '#FFFFEF',
+                    color: useRewardCredit ? '#FFFFEF' : '#C7230F',
+                    borderColor: '#C7230F'
+                  }}
+                  className="w-full py-3.5 px-4 rounded-2xl font-black text-xs uppercase tracking-wider border-2 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs hover:opacity-95"
+                >
+                  <Check size={16} className={useRewardCredit ? 'inline' : 'hidden'} />
+                  <span>
+                    {useRewardCredit
+                      ? `Applied PKR ${Math.min(availableRewardCredit, remainingBeforeRewards)} from Rewards!`
+                      : `Apply PKR ${Math.min(availableRewardCredit, remainingBeforeRewards)} from Rewards`}
+                  </span>
+                </button>
+              </div>
+            )}
+
             {/* Promo Code Card */}
             <div className="bg-white rounded-3xl p-6 border-2 border-[#C7230F]/20 shadow-xs">
               <div className="flex items-center gap-3 mb-4">
@@ -426,13 +483,18 @@ export default function CheckoutPage() {
               </div>
 
               {appliedCoupon && (
-                <div className="mt-3 bg-[#FFFFEF] p-3 rounded-xl flex justify-between items-center text-xs border border-[#C7230F]/30">
-                  <span className="font-extrabold text-[#C7230F]">
-                    Code '{appliedCoupon.code}' Applied! (10% OFF)
-                  </span>
-                  <span className="font-black text-[#C7230F]">
-                    - PKR {appliedCoupon.discount_amount}
-                  </span>
+                <div className="mt-3 bg-[#FFFFEF] p-4 rounded-xl border border-[#C7230F]/30 space-y-1.5">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-extrabold text-[#C7230F]">
+                      Code '{appliedCoupon.code}' Applied! (10% OFF)
+                    </span>
+                    <span className="font-black text-[#C7230F]">
+                      - PKR {appliedCoupon.discount_amount}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#C7230F]/80 font-bold leading-normal">
+                    Single-use referral key: when you click "Place Order" below, this key will be marked as REDEEMED and your referrer will receive their 20% reward points!
+                  </p>
                 </div>
               )}
             </div>
@@ -487,6 +549,13 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-[#C7230F] font-extrabold">
                   <span>Discount ({appliedCoupon.code})</span>
                   <span className="font-black">- {formatPrice(appliedCoupon.discount_amount)}</span>
+                </div>
+              )}
+
+              {rewardCreditToUse > 0 && (
+                <div className="flex justify-between text-[#C7230F] font-extrabold">
+                  <span>Reward Points Applied</span>
+                  <span className="font-black">- {formatPrice(rewardCreditToUse)}</span>
                 </div>
               )}
 

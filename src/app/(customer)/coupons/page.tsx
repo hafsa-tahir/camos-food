@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Tag, Copy, Check, RefreshCw, Eye, EyeOff, Trash2, Key, Sparkles, LogIn, UserCheck } from 'lucide-react'
+import { Tag, Copy, Check, RefreshCw, Eye, EyeOff, Trash2, Key, Sparkles, LogIn, UserCheck, ShoppingBag } from 'lucide-react'
 import { toast } from 'sonner'
 import AuthModal from '@/components/ui/AuthModal'
 
@@ -25,6 +25,7 @@ export default function CouponsPage() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [accountCredit, setAccountCredit] = useState(0)
   const [authChecked, setAuthChecked] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
 
@@ -35,13 +36,16 @@ export default function CouponsPage() {
         const data = await res.json()
         if (data?.data?.customer) {
           setUser(data.data.customer)
+          setAccountCredit(Number(data.data.customer.account_credit || 0))
           return data.data.customer
         }
       }
       setUser(null)
+      setAccountCredit(0)
       return null
     } catch {
       setUser(null)
+      setAccountCredit(0)
       return null
     } finally {
       setAuthChecked(true)
@@ -56,6 +60,9 @@ export default function CouponsPage() {
         setCodesList(res.data)
       } else {
         setCodesList([])
+      }
+      if (res?.account_credit !== undefined) {
+        setAccountCredit(Number(res.account_credit))
       }
     } catch (e) {
       console.error('Failed to load coupons:', e)
@@ -173,9 +180,74 @@ export default function CouponsPage() {
             Referral & Discount Keys
           </h1>
           <p className="text-xs sm:text-sm text-[#C7230F]/80 font-medium leading-relaxed">
-            Generate unique promo codes to share with friends. When your friends redeem your key, they get <strong className="text-[#C7230F] font-extrabold">10% OFF</strong> and you earn <strong className="text-[#C7230F] font-extrabold">20% OFF</strong>!
+            Generate unique promo codes to share with friends. When your friends redeem your key, they get <strong className="text-[#C7230F] font-extrabold">10% OFF</strong> and you earn <strong className="text-[#C7230F] font-extrabold">20% REWARD POINTS</strong>!
           </p>
         </div>
+
+        {/* Reward Points & Balance Dashboard Card */}
+        {user && (
+          <div
+            style={{ backgroundColor: '#FFFFFF', borderColor: '#C7230F' }}
+            className="rounded-[2.5rem] border-2 p-6 sm:p-8 mb-10 shadow-md text-left max-w-3xl mx-auto overflow-hidden"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-[#C7230F]/20">
+              <div>
+                <div className="flex items-center gap-2 text-[#C7230F] font-black text-xs uppercase tracking-wider mb-2">
+                  <Sparkles size={16} />
+                  <span>Your Camo Reward Balance</span>
+                </div>
+                <div className="font-serif font-black text-4xl sm:text-5xl text-[#C7230F]">
+                  PKR {accountCredit}
+                </div>
+                <p className="text-xs font-bold text-[#C7230F]/70 mt-1">
+                  Earned from friend referral orders • Spend instantly at checkout for cash discounts!
+                </p>
+              </div>
+
+              <a
+                href="/menu"
+                style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full font-black text-xs uppercase tracking-wider shadow-lg hover:bg-[#A31C0C] transition-all no-underline shrink-0"
+              >
+                <ShoppingBag size={15} style={{ color: '#FFFFEF' }} />
+                <span style={{ color: '#FFFFEF' }}>Order Food & Use Points</span>
+              </a>
+            </div>
+
+            {/* 3 Steps Explainer */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6">
+              <div className="bg-[#FFFFEF] p-4 rounded-2xl border border-[#C7230F]/20">
+                <span className="w-6 h-6 rounded-full bg-[#C7230F] text-[#FFFFEF] text-xs font-black flex items-center justify-center mb-2">
+                  1
+                </span>
+                <div className="font-black text-xs text-[#C7230F] mb-1">Share Your Key</div>
+                <p className="text-[11px] font-bold text-[#C7230F]/70 leading-normal">
+                  Generate your personal referral code below and share it with your friends.
+                </p>
+              </div>
+
+              <div className="bg-[#FFFFEF] p-4 rounded-2xl border border-[#C7230F]/20">
+                <span className="w-6 h-6 rounded-full bg-[#C7230F] text-[#FFFFEF] text-xs font-black flex items-center justify-center mb-2">
+                  2
+                </span>
+                <div className="font-black text-xs text-[#C7230F] mb-1">Friend Gets 10% OFF</div>
+                <p className="text-[11px] font-bold text-[#C7230F]/70 leading-normal">
+                  Friend applies your code at checkout and receives 10% instant discount.
+                </p>
+              </div>
+
+              <div className="bg-[#FFFFEF] p-4 rounded-2xl border border-[#C7230F]/20">
+                <span className="w-6 h-6 rounded-full bg-[#C7230F] text-[#FFFFEF] text-xs font-black flex items-center justify-center mb-2">
+                  3
+                </span>
+                <div className="font-black text-xs text-[#C7230F] mb-1">You Earn 20% Reward</div>
+                <p className="text-[11px] font-bold text-[#C7230F]/70 leading-normal">
+                  20% of their order total is credited directly to your Camo Reward Balance!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Generate Action Card */}
         <div
@@ -193,7 +265,7 @@ export default function CouponsPage() {
             Generate Your Unique Key
           </h2>
           <p style={{ color: '#C7230F' }} className="text-xs sm:text-sm mb-6 font-bold opacity-80">
-            Each key is linked to your account to track redemptions and automatically credit your rewards.
+            Each key is linked to your account to track redemptions and automatically credit your 20% rewards.
           </p>
 
           {!authChecked ? (
@@ -271,7 +343,7 @@ export default function CouponsPage() {
             </h3>
             {user && (
               <span style={{ color: '#C7230F' }} className="text-xs font-black opacity-80">
-                {codesList.length} Key{codesList.length !== 1 ? 's' : ''} Available
+                {codesList.length} Key{codesList.length !== 1 ? 's' : ''} Generated
               </span>
             )}
           </div>
@@ -292,7 +364,7 @@ export default function CouponsPage() {
                 Track Your Personal Referral Keys
               </h4>
               <p className="text-xs sm:text-sm font-medium text-[#C7230F]/80 max-w-md mx-auto mb-5">
-                Sign in to view all your active promo codes, see who redeemed your keys, and claim your 20% discount.
+                Sign in to view all your active promo codes, track redemptions, and view your earned rewards balance.
               </p>
               <button
                 onClick={() => setAuthModalOpen(true)}
@@ -315,11 +387,12 @@ export default function CouponsPage() {
               {codesList.map((c, idx) => {
                 const itemKey = c.id || c.code || `key-${idx}`
                 const isRevealed = !!revealedIds[itemKey]
+                const isRedeemed = c.times_used >= 1 || !c.is_active
 
                 return (
                   <div
                     key={itemKey}
-                    style={{ backgroundColor: '#FFFFFF', borderColor: 'rgba(199, 35, 15, 0.25)' }}
+                    style={{ backgroundColor: '#FFFFFF', borderColor: isRedeemed ? 'rgba(16, 185, 129, 0.4)' : 'rgba(199, 35, 15, 0.25)' }}
                     className="rounded-2xl p-5 border-2 flex flex-col justify-between shadow-xs hover:border-[#C7230F] transition-all gap-4"
                   >
                     <div className="flex items-center justify-between">
@@ -378,20 +451,31 @@ export default function CouponsPage() {
 
                     <div className="flex items-center justify-between text-[11px] font-bold pt-1">
                       <span style={{ color: '#C7230F' }}>
-                        Redemptions: <strong style={{ color: '#C7230F', fontWeight: 900 }}>{c.times_used || 0} / 1 (Single Use)</strong>
+                        Redemptions: <strong style={{ color: '#C7230F', fontWeight: 900 }}>{c.times_used || 0} / 1</strong>
                       </span>
                       <div>
-                        {c.times_used >= 1 || !c.is_active ? (
-                          <span className="text-red-700 font-black bg-red-100 border border-red-200 px-2.5 py-1 rounded-md">
-                            EXPIRED (REDEEMED)
+                        {isRedeemed ? (
+                          <span className="text-emerald-800 font-black bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-md flex items-center gap-1">
+                            <Check size={12} />
+                            REDEEMED • 20% CREDITED
                           </span>
                         ) : (
                           <span className="text-emerald-700 font-black bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-md">
-                            ACTIVE
+                            ACTIVE • READY TO SHARE
                           </span>
                         )}
                       </div>
                     </div>
+
+                    {isRedeemed ? (
+                      <div className="text-[11px] font-bold text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                        ✓ Friend placed an order using this code! Your 20% reward credit has been added to your Reward Balance above.
+                      </div>
+                    ) : (
+                      <div className="text-[11px] font-bold text-[#C7230F]/70 bg-[#FFFFEF] p-2.5 rounded-xl border border-[#C7230F]/15">
+                        Share this key with a friend. Once they complete an order, you will earn 20% of their order total in Reward Points!
+                      </div>
+                    )}
                   </div>
                 )
               })}

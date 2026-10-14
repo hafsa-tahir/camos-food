@@ -129,6 +129,21 @@ export async function POST(request: NextRequest) {
           .from('coupons')
           .update({ times_used: 1, is_active: false })
           .eq('id', coupon.id)
+
+        // Credit the code creator with PKR 200 reward points upon friend referral signup
+        const { data: ownerCust } = await serviceClient
+          .from('customers')
+          .select('id, account_credit')
+          .eq('id', coupon.owner_id)
+          .maybeSingle()
+
+        if (ownerCust) {
+          const currentCredit = Number(ownerCust.account_credit || 0)
+          await serviceClient
+            .from('customers')
+            .update({ account_credit: currentCredit + 200 })
+            .eq('id', ownerCust.id)
+        }
       }
     }
 
