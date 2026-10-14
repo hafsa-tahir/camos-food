@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Tag, Copy, Check, RefreshCw, Eye, EyeOff, Trash2, Key, Sparkles } from 'lucide-react'
+import { Tag, Copy, Check, RefreshCw, Eye, EyeOff, Trash2, Key, Sparkles, LogIn, UserCheck } from 'lucide-react'
 import { toast } from 'sonner'
+import AuthModal from '@/components/ui/AuthModal'
 
 interface CouponItem {
   id?: string
@@ -23,6 +24,29 @@ export default function CouponsPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [authChecked, setAuthChecked] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+
+  const checkAuth = async () => {
+    try {
+      const res = await fetch('/api/profile')
+      if (res.ok) {
+        const data = await res.json()
+        if (data?.data?.customer) {
+          setUser(data.data.customer)
+          return data.data.customer
+        }
+      }
+      setUser(null)
+      return null
+    } catch {
+      setUser(null)
+      return null
+    } finally {
+      setAuthChecked(true)
+    }
+  }
 
   const loadCodes = async () => {
     setLoading(true)
@@ -30,16 +54,25 @@ export default function CouponsPage() {
       const res = await fetch('/api/coupons/mine').then((r) => r.json())
       if (res?.data && Array.isArray(res.data)) {
         setCodesList(res.data)
+      } else {
+        setCodesList([])
       }
     } catch (e) {
       console.error('Failed to load coupons:', e)
+      setCodesList([])
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadCodes()
+    checkAuth().then((authedUser) => {
+      if (authedUser) {
+        loadCodes()
+      } else {
+        setLoading(false)
+      }
+    })
   }, [])
 
   const copyToClipboard = (rawCode: string) => {
@@ -50,11 +83,26 @@ export default function CouponsPage() {
   }
 
   const generateCoupon = async () => {
+    if (!user) {
+      toast.error('Please log in or create an account to generate a referral code.')
+      setAuthModalOpen(true)
+      return
+    }
+
     setGenerating(true)
     try {
-      const res = await fetch('/api/coupons', { method: 'POST' }).then((r) => r.json())
-      if (res?.data?.code) {
-        const newCoupon: CouponItem = res.data
+      const res = await fetch('/api/coupons', { method: 'POST' })
+      const data = await res.json()
+
+      if (res.status === 401) {
+        toast.error(data.error || 'Please log in or register to generate a referral key.')
+        setUser(null)
+        setAuthModalOpen(true)
+        return
+      }
+
+      if (data?.data?.code) {
+        const newCoupon: CouponItem = data.data
         setNewlyGeneratedCode(newCoupon.code)
 
         const updated = [newCoupon, ...codesList.filter((c) => c.code !== newCoupon.code)]
@@ -62,8 +110,8 @@ export default function CouponsPage() {
 
         navigator.clipboard.writeText(newCoupon.code)
         toast.success(`Generated & Copied Key: ${newCoupon.code}`)
-      } else if (res?.error) {
-        toast.error(res.error)
+      } else if (data?.error) {
+        toast.error(data.error)
       }
     } catch (e) {
       toast.error('Failed to generate coupon. Please check connection.')
@@ -73,6 +121,12 @@ export default function CouponsPage() {
   }
 
   const deleteCoupon = async (item: CouponItem) => {
+    if (!user) {
+      toast.error('Please log in to manage your referral keys.')
+      setAuthModalOpen(true)
+      return
+    }
+
     if (!confirm(`Are you sure you want to delete referral key "${item.code}"?`)) return
     try {
       const res = await fetch(`/api/coupons?${item.id ? `id=${item.id}` : `code=${item.code}`}`, {
@@ -96,6 +150,18 @@ export default function CouponsPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFFEF] text-[#C7230F] pt-28 pb-16 px-4 sm:px-6 font-sans">
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={async () => {
+          const authedUser = await checkAuth()
+          if (authedUser) {
+            loadCodes()
+            toast.success('Signed in successfully! You can now generate your code.')
+          }
+        }}
+      />
+
       <div className="max-w-[1280px] mx-auto">
         {/* Page Header */}
         <div className="mb-10 text-center max-w-2xl mx-auto">
@@ -127,45 +193,72 @@ export default function CouponsPage() {
             Generate Your Unique Key
           </h2>
           <p style={{ color: '#C7230F' }} className="text-xs sm:text-sm mb-6 font-bold opacity-80">
-            Each key is saved directly to our database and works across all customer accounts.
+            Each key is linked to your account to track redemptions and automatically credit your rewards.
           </p>
 
-          <button
-            onClick={generateCoupon}
-            disabled={generating}
-            style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }}
-            className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full shadow-lg hover:bg-[#A31C0C] transition-all transform hover:scale-105 border-none cursor-pointer uppercase tracking-wider disabled:opacity-50 font-black text-sm"
-          >
-            <RefreshCw size={16} style={{ color: '#FFFFEF' }} className={generating ? 'animate-spin' : ''} />
-            <span style={{ color: '#FFFFEF', fontWeight: 900 }}>
-              {generating ? 'Generating Code...' : 'Generate New Referral Key'}
-            </span>
-          </button>
-
-          {newlyGeneratedCode && (
-            <div
-              style={{ backgroundColor: '#FFFFEF', borderColor: '#C7230F' }}
-              className="mt-6 p-4 border-2 rounded-2xl flex items-center justify-between gap-3 animate-fade-in"
-            >
-              <div className="text-left">
-                <span style={{ color: '#C7230F' }} className="block text-[10px] font-black uppercase tracking-wider">
-                  New Key Ready
-                </span>
-                <span style={{ color: '#C7230F' }} className="font-mono font-black text-lg tracking-wider">
-                  {newlyGeneratedCode}
-                </span>
-              </div>
+          {!authChecked ? (
+            <div className="h-12 w-48 mx-auto bg-[#C7230F]/10 rounded-full animate-pulse" />
+          ) : !user ? (
+            <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/20 rounded-2xl p-6 text-center shadow-xs">
+              <p className="text-xs sm:text-sm font-bold text-[#C7230F] mb-4 leading-relaxed">
+                You must have an account and be logged in to generate referral keys. This allows us to track your code and reward your account whenever your friends order!
+              </p>
               <button
-                onClick={() => copyToClipboard(newlyGeneratedCode)}
+                onClick={() => setAuthModalOpen(true)}
                 style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }}
-                className="font-black text-xs px-4 py-2 rounded-xl border-none cursor-pointer flex items-center gap-1.5 shadow-xs hover:bg-[#A31C0C]"
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full shadow-lg hover:bg-[#A31C0C] transition-all transform hover:scale-105 border-none cursor-pointer uppercase tracking-wider font-black text-xs sm:text-sm"
               >
-                {copiedCode === newlyGeneratedCode ? <Check size={14} style={{ color: '#FFFFEF' }} /> : <Copy size={14} style={{ color: '#FFFFEF' }} />}
-                <span style={{ color: '#FFFFEF', fontWeight: 900 }}>
-                  {copiedCode === newlyGeneratedCode ? 'Copied!' : 'Copy'}
-                </span>
+                <LogIn size={16} style={{ color: '#FFFFEF' }} />
+                <span>Sign In / Create Account to Generate</span>
               </button>
             </div>
+          ) : (
+            <>
+              <div className="inline-flex items-center gap-2 bg-[#C7230F]/10 text-[#C7230F] px-4 py-1.5 rounded-full text-xs font-black mb-5 border border-[#C7230F]/20">
+                <UserCheck size={14} />
+                <span>Account: {user.name || user.email}</span>
+              </div>
+
+              <div>
+                <button
+                  onClick={generateCoupon}
+                  disabled={generating}
+                  style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }}
+                  className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full shadow-lg hover:bg-[#A31C0C] transition-all transform hover:scale-105 border-none cursor-pointer uppercase tracking-wider disabled:opacity-50 font-black text-sm"
+                >
+                  <RefreshCw size={16} style={{ color: '#FFFFEF' }} className={generating ? 'animate-spin' : ''} />
+                  <span style={{ color: '#FFFFEF', fontWeight: 900 }}>
+                    {generating ? 'Generating Code...' : 'Generate New Referral Key'}
+                  </span>
+                </button>
+              </div>
+
+              {newlyGeneratedCode && (
+                <div
+                  style={{ backgroundColor: '#FFFFEF', borderColor: '#C7230F' }}
+                  className="mt-6 p-4 border-2 rounded-2xl flex items-center justify-between gap-3 animate-fade-in"
+                >
+                  <div className="text-left">
+                    <span style={{ color: '#C7230F' }} className="block text-[10px] font-black uppercase tracking-wider">
+                      New Key Ready
+                    </span>
+                    <span style={{ color: '#C7230F' }} className="font-mono font-black text-lg tracking-wider">
+                      {newlyGeneratedCode}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(newlyGeneratedCode)}
+                    style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }}
+                    className="font-black text-xs px-4 py-2 rounded-xl border-none cursor-pointer flex items-center gap-1.5 shadow-xs hover:bg-[#A31C0C]"
+                  >
+                    {copiedCode === newlyGeneratedCode ? <Check size={14} style={{ color: '#FFFFEF' }} /> : <Copy size={14} style={{ color: '#FFFFEF' }} />}
+                    <span style={{ color: '#FFFFEF', fontWeight: 900 }}>
+                      {copiedCode === newlyGeneratedCode ? 'Copied!' : 'Copy'}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -176,16 +269,39 @@ export default function CouponsPage() {
               <Tag size={20} style={{ color: '#C7230F' }} />
               <span>Your Active Keys</span>
             </h3>
-            <span style={{ color: '#C7230F' }} className="text-xs font-black opacity-80">
-              {codesList.length} Key{codesList.length !== 1 ? 's' : ''} Available
-            </span>
+            {user && (
+              <span style={{ color: '#C7230F' }} className="text-xs font-black opacity-80">
+                {codesList.length} Key{codesList.length !== 1 ? 's' : ''} Available
+              </span>
+            )}
           </div>
 
-          {loading ? (
+          {!authChecked || loading ? (
             <div className="flex flex-col gap-4">
               {[1, 2].map((n) => (
                 <div key={n} className="h-20 bg-white rounded-2xl animate-pulse border border-[#C7230F]/10" />
               ))}
+            </div>
+          ) : !user ? (
+            <div
+              style={{ backgroundColor: '#FFFFFF', borderColor: 'rgba(199, 35, 15, 0.25)', color: '#C7230F' }}
+              className="rounded-2xl p-8 border-2 text-center shadow-xs"
+            >
+              <Key size={32} className="mx-auto mb-3 opacity-60 text-[#C7230F]" />
+              <h4 className="font-serif font-black text-lg text-[#C7230F] mb-1">
+                Track Your Personal Referral Keys
+              </h4>
+              <p className="text-xs sm:text-sm font-medium text-[#C7230F]/80 max-w-md mx-auto mb-5">
+                Sign in to view all your active promo codes, see who redeemed your keys, and claim your 20% discount.
+              </p>
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-black text-xs uppercase tracking-wider hover:bg-[#A31C0C] border-none cursor-pointer shadow-sm transition-all"
+              >
+                <LogIn size={14} style={{ color: '#FFFFEF' }} />
+                <span>Log In to View Keys</span>
+              </button>
             </div>
           ) : codesList.length === 0 ? (
             <div

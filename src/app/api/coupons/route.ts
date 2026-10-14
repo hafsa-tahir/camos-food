@@ -44,41 +44,30 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     const serviceClient = await createServiceClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-    let ownerId: string | null = null
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'You must have an account and be logged in to generate a referral code.' },
+        { status: 401 }
+      )
+    }
 
-    if (user) {
-      ownerId = user.id
+    const ownerId = user.id
 
-      // Ensure customer profile exists in DB so foreign key constraint is satisfied
-      const { data: customer } = await serviceClient
-        .from('customers')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle()
+    // Ensure customer profile exists in DB so foreign key constraint is satisfied
+    const { data: customer } = await serviceClient
+      .from('customers')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle()
 
-      if (!customer) {
-        await serviceClient.from('customers').upsert({
-          id: user.id,
-          name: user.user_metadata?.name || 'Camo Customer',
-          email: user.email || 'customer@camosfoods.com',
-        })
-      }
-    } else {
-      // For guest user, select first existing customer or fallback system customer ID
-      const { data: anyCustomer } = await serviceClient
-        .from('customers')
-        .select('id')
-        .limit(1)
-        .maybeSingle()
-
-      if (anyCustomer?.id) {
-        ownerId = anyCustomer.id
-      } else {
-        // Fallback default system UUID
-        ownerId = '58455e97-92a3-44d7-8866-f9be58b1a24a'
-      }
+    if (!customer) {
+      await serviceClient.from('customers').upsert({
+        id: user.id,
+        name: user.user_metadata?.name || 'Camo Customer',
+        email: user.email || 'customer@camosfoods.com',
+      })
     }
 
     // Always generate a 100% unique random CAMO-6CHAR alphanumeric code
@@ -136,7 +125,11 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient()
     const serviceClient = await createServiceClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'You must be logged in to delete a referral key.' }, { status: 401 })
+    }
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
@@ -146,6 +139,15 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Coupon ID or code is required' }, { status: 400 })
     }
 
+    // Check if user is admin
+    const { data: customer } = await serviceClient
+      .from('customers')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const isAdmin = customer?.role === 'admin'
+
     // PERMANENT HARD DELETE from Supabase database table
     let query = serviceClient.from('coupons').delete()
 
@@ -153,6 +155,11 @@ export async function DELETE(request: NextRequest) {
       query = query.eq('id', id)
     } else if (code) {
       query = query.eq('code', code.trim().toUpperCase())
+    }
+
+    if (!isAdmin) {
+      // Must be the owner to delete
+      query = query.eq('owner_id', user.id)
     }
 
     const { error } = await query
