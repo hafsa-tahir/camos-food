@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "halal food",
     "biryani delivery",
     "order food online",
-    "Karachi food delivery",
+    "Islamabad food delivery",
     "healthy meal plans",
     "high protein meals",
     "makhni handi",
@@ -80,7 +80,7 @@ const jsonLd = {
   servesCuisine: ['Pakistani', 'Halal', 'Biryani', 'Fast Food'],
   address: {
     '@type': 'PostalAddress',
-    addressLocality: 'Karachi',
+    addressLocality: 'Islamabad',
     addressCountry: 'PK',
   },
   openingHoursSpecification: [

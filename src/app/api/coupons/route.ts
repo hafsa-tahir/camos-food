@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { generateCouponCode } from '@/lib/utils'
+import { isAdmin } from '@/lib/adminAuth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -139,14 +140,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Coupon ID or code is required' }, { status: 400 })
     }
 
-    // Check if user is admin
-    const { data: customer } = await serviceClient
-      .from('customers')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    const isAdmin = customer?.role === 'admin'
+    // Check if user is admin via adminAuth helper
+    const isUserAdmin = await isAdmin(request)
 
     // PERMANENT HARD DELETE from Supabase database table
     let query = serviceClient.from('coupons').delete()
@@ -157,7 +152,7 @@ export async function DELETE(request: NextRequest) {
       query = query.eq('code', code.trim().toUpperCase())
     }
 
-    if (!isAdmin) {
+    if (!isUserAdmin) {
       // Must be the owner to delete
       query = query.eq('owner_id', user.id)
     }

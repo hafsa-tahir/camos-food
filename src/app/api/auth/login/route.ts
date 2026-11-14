@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     const shouldBeAdmin =
-      isAdminCredential || ADMIN_EMAILS.includes(normalizedEmail) || customer?.role === 'admin'
+      isAdminCredential || ADMIN_EMAILS.includes(normalizedEmail)
 
     if (!customer) {
       const { data: created } = await serviceClient
@@ -116,21 +116,11 @@ export async function POST(request: NextRequest) {
           id: userId,
           name: authData.user.user_metadata?.name || (shouldBeAdmin ? 'Camo Foods Admin' : normalizedEmail.split('@')[0]),
           email: normalizedEmail,
-          role: shouldBeAdmin ? 'admin' : 'customer',
         })
         .select()
         .single()
 
       customer = created
-    } else if (shouldBeAdmin && customer.role !== 'admin') {
-      const { data: updated } = await serviceClient
-        .from('customers')
-        .update({ role: 'admin' })
-        .eq('id', userId)
-        .select()
-        .single()
-
-      if (updated) customer = updated
     }
 
     // 4. Set HTTP-only session cookies

@@ -34,7 +34,7 @@ export default function Navbar() {
       .then((r) => r.json())
       .then((res) => {
         const email = res.data?.customer?.email?.toLowerCase() || ''
-        if (res.data?.customer?.role === 'admin' || email.includes('camosfoodapp') || email === 'admin@camosfoods.com') {
+        if (email.includes('camosfoodapp') || email === 'admin@camosfoods.com') {
           setIsAdminUser(true)
         }
       })

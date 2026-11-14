@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Menu — Authentic Halal Dishes & Fast Food',
   description:
-    'Explore the full Camo\'s Foods menu: slow-cooked chicken biryani, heritage handi, high-protein gourmet burgers, fresh wraps, and desserts. Order online for express delivery in Karachi.',
+    'Explore the full Camo\'s Foods menu: slow-cooked chicken biryani, heritage handi, high-protein gourmet burgers, fresh wraps, and desserts. Order online for express delivery in Islamabad.',
   alternates: {
     canonical: '/menu',
   },

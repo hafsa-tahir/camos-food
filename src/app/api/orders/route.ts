@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
     const parsed = orderSchema.parse(body)
 
     const serviceClient = await createServiceClient()
-    const { REAL_MENU_ITEMS } = await import('@/lib/menuData')
+    const { REAL_MENU_ITEMS, WINTER_PLAN_DISHES } = await import('@/lib/menuData')
+    const allLocalMenuItems = [...REAL_MENU_ITEMS, ...WINTER_PLAN_DISHES]
     const itemIds = parsed.items.map((i) => i.food_item_id)
 
     // Fetch all DB food items using serviceClient (bypasses RLS)
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 3. Local menuData match by ID or Name
-      const realMatch = REAL_MENU_ITEMS.find(
+      const realMatch = allLocalMenuItems.find(
         (f) => f.id === id || f.name.toLowerCase() === id.toLowerCase() || id.toLowerCase().includes(f.name.toLowerCase())
       )
       if (realMatch) {
@@ -92,12 +93,14 @@ export async function POST(request: NextRequest) {
         id.includes('weekly') ||
         id.includes('package') ||
         id.includes('diet') ||
-        id.includes('desi')
+        id.includes('desi') ||
+        id.includes('winter')
       ) {
         let packageTitle = 'Weekly Subscription Package'
         let packagePrice = 3750
 
-        if (id.includes('diet_5')) { packageTitle = '5-Day Diet Plan'; packagePrice = 3550; }
+        if (id.includes('winter_7')) { packageTitle = '7-Day Winter Desi Plan'; packagePrice = 4400; }
+        else if (id.includes('diet_5')) { packageTitle = '5-Day Diet Plan'; packagePrice = 3550; }
         else if (id.includes('diet_7')) { packageTitle = '7-Day Diet Plan'; packagePrice = 5250; }
         else if (id.includes('desi_5')) { packageTitle = '5-Day Desi Plan'; packagePrice = 2800; }
         else if (id.includes('desi_7_beef')) { packageTitle = 'Desi 7-Day Package (Beef Qeema)'; packagePrice = 3900; }

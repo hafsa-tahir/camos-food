@@ -635,7 +635,7 @@ export default function AdminDashboardPage() {
                           <span style={{ backgroundColor: '#C7230F', color: '#FFFFEF' }} className="font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase">
                             PKR {o.total}
                           </span>
-                          {(o.subtotal === 3550 || o.subtotal === 5250 || o.subtotal === 2800 || o.subtotal === 3750 || o.subtotal === 3900 || o.order_items?.some(it => it.name_at_order?.toLowerCase().includes('plan') || it.name_at_order?.toLowerCase().includes('package'))) && (
+                          {(o.subtotal === 3550 || o.subtotal === 5250 || o.subtotal === 2800 || o.subtotal === 3750 || o.subtotal === 3900 || o.subtotal === 4400 || o.order_items?.some(it => it.name_at_order?.toLowerCase().includes('plan') || it.name_at_order?.toLowerCase().includes('package'))) && (
                             <span style={{ backgroundColor: '#15803D', color: '#FFFFEF' }} className="font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                               WEEKLY SUBSCRIPTION
                             </span>
@@ -694,7 +694,7 @@ export default function AdminDashboardPage() {
                         {(!o.order_items || o.order_items.length === 0) ? (
                           <div style={{ backgroundColor: '#FFFFEF' }} className="p-3 rounded-xl flex justify-between items-center text-xs font-bold">
                             <span style={{ color: '#C7230F' }}>
-                              1x {o.subtotal === 3550 ? '5-Day Diet Plan' : o.subtotal === 5250 ? '7-Day Diet Plan' : o.subtotal === 2800 ? '5-Day Desi Plan' : o.subtotal === 3750 ? '7-Day Desi Plan (Chicken Qeema)' : o.subtotal === 3900 ? '7-Day Desi Plan (Beef Qeema)' : 'Gourmet Meal Item'}
+                              1x {o.subtotal === 3550 ? '5-Day Diet Plan' : o.subtotal === 5250 ? '7-Day Diet Plan' : o.subtotal === 2800 ? '5-Day Desi Plan' : o.subtotal === 3750 ? '7-Day Desi Plan (Chicken Qeema)' : o.subtotal === 3900 ? '7-Day Desi Plan (Beef Qeema)' : o.subtotal === 4400 ? '7-Day Winter Desi Plan' : 'Gourmet Meal Item'}
                             </span>
                             <span style={{ color: '#C7230F' }} className="font-black">
                               PKR {o.total}

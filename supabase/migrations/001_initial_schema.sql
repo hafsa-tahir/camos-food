@@ -110,7 +110,7 @@ CREATE TABLE orders (
   subtotal NUMERIC(10, 2) NOT NULL,
   discount_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
   total NUMERIC(10, 2) NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'preparing', 'delivered', 'cancelled')),
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'confirmed', 'preparing', 'delivered', 'cancelled')),
   stripe_payment_intent_id TEXT,
   stripe_session_id TEXT,
   delivery_address TEXT,
@@ -152,6 +152,22 @@ CREATE TABLE daily_meal_logs (
 );
 
 -- ============================================================
+-- WEEKLY SUBSCRIPTIONS TABLE
+-- ============================================================
+CREATE TABLE weekly_subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_name TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  email TEXT,
+  package_plan TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'expired')),
+  start_date DATE DEFAULT CURRENT_DATE,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- ============================================================
 -- INDEXES
 -- ============================================================
 CREATE INDEX idx_food_items_status ON food_items(status);
@@ -162,6 +178,7 @@ CREATE INDEX idx_order_items_order ON order_items(order_id);
 CREATE INDEX idx_meal_logs_customer_date ON daily_meal_logs(customer_id, date);
 CREATE INDEX idx_coupons_code ON coupons(code);
 CREATE INDEX idx_deals_active ON deals(is_active, starts_at, ends_at);
+CREATE INDEX idx_weekly_subscriptions_status ON weekly_subscriptions(status);
 
 -- ============================================================
 -- ROW LEVEL SECURITY (RLS)
@@ -174,6 +191,7 @@ ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE daily_meal_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE weekly_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Customers: own row only
 CREATE POLICY "customers_own" ON customers
@@ -215,6 +233,10 @@ CREATE POLICY "order_items_own" ON order_items
 CREATE POLICY "meal_logs_own" ON daily_meal_logs
   FOR ALL USING (auth.uid() = customer_id);
 
+-- Weekly subscriptions: open read/write for service role & app users
+CREATE POLICY "weekly_subscriptions_all" ON weekly_subscriptions
+  FOR ALL USING (TRUE);
+
 -- ============================================================
 -- UPDATED_AT TRIGGER
 -- ============================================================
@@ -236,6 +258,9 @@ CREATE TRIGGER food_items_updated_at BEFORE UPDATE ON food_items
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 CREATE TRIGGER orders_updated_at BEFORE UPDATE ON orders
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+CREATE TRIGGER weekly_subscriptions_updated_at BEFORE UPDATE ON weekly_subscriptions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- ============================================================

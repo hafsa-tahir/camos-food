@@ -32,7 +32,7 @@ import { formatPrice } from '@/lib/utils'
 import { useCartStore } from '@/store/cartStore'
 import { useFavoritesStore } from '@/store/favoritesStore'
 import { toast } from 'sonner'
-import { REAL_MENU_ITEMS, enrichFoodItem } from '@/lib/menuData'
+import { REAL_MENU_ITEMS, WINTER_PLAN_DISHES, enrichFoodItem } from '@/lib/menuData'
 import { getDishAvailability } from '@/lib/schedule'
 
 export default function ProductPage() {
@@ -56,7 +56,8 @@ export default function ProductPage() {
 
   useEffect(() => {
     // Try matching local item baseline
-    const local = REAL_MENU_ITEMS.find((i) => i.id === id || i.name.toLowerCase() === id.toLowerCase())
+    const allLocal = [...REAL_MENU_ITEMS, ...WINTER_PLAN_DISHES]
+    const local = allLocal.find((i) => i.id === id || i.name.toLowerCase() === id.toLowerCase())
     if (local) {
       const enriched = enrichFoodItem(local)
       setItem(enriched)

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import {
   CheckCircle2,
   Utensils,
@@ -21,7 +22,7 @@ import {
 import { toast } from 'sonner'
 import { useCartStore } from '@/store/cartStore'
 
-type ActivePlanId = 'diet_5' | 'diet_7' | 'desi_5' | 'desi_7_chicken' | 'desi_7_beef'
+type ActivePlanId = 'winter_7' | 'diet_5' | 'diet_7' | 'desi_5' | 'desi_7_chicken' | 'desi_7_beef'
 
 interface MealDay {
   day: string
@@ -46,7 +47,7 @@ export default function DealsPage() {
   const router = useRouter()
   const addItem = useCartStore((state) => state.addItem)
 
-  const [activePlanId, setActivePlanId] = useState<ActivePlanId>('diet_5')
+  const [activePlanId, setActivePlanId] = useState<ActivePlanId>('winter_7')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [fridayChoice, setFridayChoice] = useState<'tacos' | 'bowl'>('tacos')
 
@@ -68,6 +69,17 @@ export default function DealsPage() {
   }, [isModalOpen])
 
   const planCards: SubscriptionPlanCard[] = [
+    {
+      id: 'winter_7',
+      category: 'desi',
+      title: '7-Day Winter Desi Plan',
+      badge: 'Winter Menu Special',
+      daysCount: 7,
+      price: 4400,
+      priceFormatted: 'Rs 4,400',
+      subtitle: 'Monday to Sunday • Winter Feast Plan',
+      highlights: ['Chicken Karahi & Kofta Curry', 'Matar Qeema & Makhni Handi', 'Chicken Biryani & Chicken Korma', 'Sunday Special Beef Nihari'],
+    },
     {
       id: 'diet_5',
       category: 'diet',
@@ -125,6 +137,16 @@ export default function DealsPage() {
     },
   ]
 
+  const winter7Days: MealDay[] = [
+    { day: 'Monday', title: 'Chicken Karahi', desc: 'Authentic wok-cooked chicken karahi with tomatoes, fresh ginger & green chillies', tag: 'Winter Monday' },
+    { day: 'Tuesday', title: 'Kofta Curry', desc: 'Juicy hand-rolled spiced meatballs simmered in rich traditional curry gravy', tag: 'Winter Favorite' },
+    { day: 'Wednesday', title: 'Matar Qeema', desc: 'Homestyle spiced minced meat slow-cooked with sweet green peas & herbs', tag: 'Home Style' },
+    { day: 'Thursday', title: 'Chicken Makhni Handi', desc: 'Velvety cream & butter gravy with tender boneless chicken in clay handi', tag: 'Chef Choice' },
+    { day: 'Friday', title: 'Chicken Biryani', desc: 'Fragrant saffron basmati rice layered with tender spiced chicken & herbs', tag: 'Friday Feast' },
+    { day: 'Saturday', title: 'Chicken Korma', desc: 'Royal Mughlai-style chicken braised in rich yogurt, fried onion & almond gravy', tag: 'Saturday Royal' },
+    { day: 'Sunday', title: 'Beef Nihari', desc: 'Slow-simmered overnight tender beef shank stew with aromatic nihari masala & ginger', tag: 'Sunday Special' },
+  ]
+
   const diet5Days: MealDay[] = [
     { day: 'Monday', title: 'Chicken Fajita Rice Bowl', desc: 'Grilled chicken strips, seasoned rice, corn, beans & bell peppers', tag: 'High Protein' },
     { day: 'Tuesday', title: 'High-Protein Chicken Wrap', desc: 'Whole wheat tortilla stuffed with lean grilled chicken & fresh veggies', tag: 'Lean Choice' },
@@ -159,7 +181,9 @@ export default function DealsPage() {
 
   const selectedPlan = planCards.find((p) => p.id === activePlanId) || planCards[0]
   const currentMeals =
-    activePlanId === 'diet_5'
+    activePlanId === 'winter_7'
+      ? winter7Days
+      : activePlanId === 'diet_5'
       ? diet5Days
       : activePlanId === 'diet_7'
       ? diet7Days
@@ -172,8 +196,8 @@ export default function DealsPage() {
       id: `subscription-${plan.id}-${Date.now()}`,
       name: plan.title,
       price: plan.price,
-      image_url: '/items/chicken-fajita-rice-bowl.jpg',
-      category: plan.category,
+      image_url: plan.id === 'winter_7' ? '/posters/winter-menu-poster.jpg' : '/items/chicken-fajita-rice-bowl.jpg',
+      category: 'subscription',
       calories: plan.category === 'diet' ? 450 : 650,
       protein_g: plan.category === 'diet' ? 42 : 30,
       carbs_g: 50,
@@ -189,6 +213,28 @@ export default function DealsPage() {
     setIsModalOpen(false)
     toast.success(`${plan.title} added to cart! (${plan.priceFormatted})`)
     router.push('/cart')
+  }
+
+  const handleOrderSoup = () => {
+    addItem({
+      id: 'camos-chicken-corn-soup',
+      name: 'Chicken Corn Soup',
+      description: 'Steaming hot winter special chicken corn soup slow-simmered with shredded halal chicken breast, sweet golden corn, egg ribbons, and black pepper.',
+      price: 500,
+      calories: 320,
+      protein_g: 28,
+      carbs_g: 34,
+      fat_g: 8,
+      category: 'starter',
+      tags: ['Winter Special', 'Warm & Comforting', 'halal'],
+      image_url: '/items/chicken-corn-soup.jpg',
+      status: 'active',
+      is_featured: true,
+      sort_order: 20,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    toast.success('Hot Chicken Corn Soup (Rs 500) added to cart!')
   }
 
   const openScheduleModal = (planId: ActivePlanId) => {
@@ -209,11 +255,106 @@ export default function DealsPage() {
             Weekly Meal Subscriptions
           </h1>
           <p className="text-sm sm:text-base text-[#C7230F]/80 max-w-2xl mx-auto leading-relaxed font-bold">
-            Choose from our 4 official weekly subscription plans. Click on any plan below to view its complete day-by-day cooking schedule and subscribe!
+            Choose from our 5 official weekly subscription plans including our new 7-Day Winter Desi Meal Plan. Click on any plan below to view its complete day-by-day cooking schedule and subscribe!
           </p>
         </div>
 
-        {/* 4 MENU PLAN CARDS SELECTION GRID */}
+        {/* FEATURED WINTER MENU DEAL (RS 4,400) & CHICKEN CORN SOUP (RS 500) SHOWCASE */}
+        <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-10 mb-14 shadow-xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-4 flex justify-center">
+              <div className="relative w-full max-w-[280px] h-[380px] rounded-3xl overflow-hidden border-2 border-[#C7230F]/25 shadow-lg bg-[#FFFFEF]">
+                <Image
+                  src="/posters/winter-menu-poster.jpg"
+                  alt="Camo's Foods Winter Menu 7-Day Desi Meal Plan"
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+              </div>
+            </div>
+
+            <div className="lg:col-span-8 flex flex-col justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <span className="bg-[#C7230F] text-[#FFFFEF] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1.5">
+                    <Sparkles size={13} />
+                    <span>NEW WINTER MENU SPECIAL</span>
+                  </span>
+                  <span className="bg-[#FFFFEF] text-[#C7230F] border border-[#C7230F]/30 text-xs font-black px-3.5 py-1 rounded-full uppercase">
+                    Warm Meals This Winter
+                  </span>
+                </div>
+
+                <h2 className="text-2xl sm:text-4xl font-black text-[#C7230F] leading-tight mb-2">
+                  7-Day Winter Desi Meal Plan — Rs 4,400
+                </h2>
+                <p className="text-xs sm:text-sm text-[#C7230F]/80 font-semibold leading-relaxed mb-5">
+                  Enjoy a heartwarming 7-day rotation of our richest traditional winter dishes: Chicken Karahi (Mon), Kofta Curry (Tue), Matar Qeema (Wed), Chicken Makhni Handi (Thu), Chicken Biryani (Fri), Chicken Korma (Sat), and Sunday Special Beef Nihari!
+                </p>
+
+                <div className="flex flex-wrap gap-3 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => openScheduleModal('winter_7')}
+                    className="py-3 px-6 rounded-full font-black text-xs transition-all cursor-pointer border-2 border-[#C7230F] bg-white text-[#C7230F] hover:bg-[#C7230F] hover:text-[#FFFFEF] uppercase tracking-wider inline-flex items-center gap-2"
+                  >
+                    <Calendar size={14} />
+                    <span>View Winter Schedule</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSubscribe(planCards[0])}
+                    className="py-3 px-7 rounded-full font-black text-xs transition-all cursor-pointer border-none bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] uppercase tracking-wider inline-flex items-center gap-2 shadow-md"
+                  >
+                    <ShoppingBag size={14} />
+                    <span>Subscribe Winter Plan — Rs 4,400</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Winter Add-On: Chicken Corn Soup (Rs 500) */}
+              <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/25 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden border border-[#C7230F]/20 shrink-0 bg-white">
+                    <Image
+                      src="/items/chicken-corn-soup.jpg"
+                      alt="Chicken Corn Soup"
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">
+                        WINTER SOUP ADD-ON
+                      </span>
+                      <span className="text-xs font-black text-[#C7230F]">Rs 500</span>
+                    </div>
+                    <h3 className="font-extrabold text-base sm:text-lg text-[#C7230F]">
+                      Hot Chicken Corn Soup
+                    </h3>
+                    <p className="text-xs text-[#C7230F]/75 font-semibold">
+                      Slow-simmered shredded halal chicken, sweet corn & egg ribbons — available daily!
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleOrderSoup}
+                  className="shrink-0 w-full sm:w-auto py-3 px-5 rounded-full font-black text-xs transition-all cursor-pointer border-none bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <ShoppingBag size={14} />
+                  <span>Add Soup — Rs 500</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 5 MENU PLAN CARDS SELECTION GRID */}
         <div className="mb-16">
           <div className="text-center mb-8">
             <span className="text-xs font-black text-[#C7230F] uppercase tracking-widest bg-white border border-[#C7230F]/20 px-5 py-2 rounded-full shadow-xs">
@@ -221,8 +362,8 @@ export default function DealsPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {planCards.slice(0, 4).map((plan) => {
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {planCards.slice(0, 5).map((plan) => {
               const isSelected =
                 activePlanId === plan.id ||
                 (plan.id === 'desi_7_chicken' && activePlanId === 'desi_7_beef')
@@ -441,8 +582,8 @@ export default function DealsPage() {
                 </button>
               </div>
 
-              {/* Qeema Option inside Modal if Desi 7-day */}
-              {selectedPlan.category === 'desi' && selectedPlan.daysCount === 7 && (
+              {/* Qeema Option inside Modal if Classic Desi 7-day */}
+              {(activePlanId === 'desi_7_chicken' || activePlanId === 'desi_7_beef') && (
                 <div className="bg-white px-6 sm:px-8 py-3 border-b border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-3">
                   <div className="text-xs font-black text-[#C7230F] uppercase tracking-wide">
                     Select Wednesday Dish:

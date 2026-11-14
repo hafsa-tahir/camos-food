@@ -114,7 +114,6 @@ export async function POST(request: NextRequest) {
         id: userId,
         name: parsed.name.trim(),
         email: normalizedEmail,
-        role: isAdminAccount ? 'admin' : 'customer',
       })
 
     // 5. Referral Code Handling

@@ -27,7 +27,7 @@ export default function LoginPage() {
       if (!res.ok) {
         toast.error(data.error || 'Invalid login credentials. Please check your email and password.')
       } else {
-        if (data.data?.redirectUrl === '/admin' || data.data?.isAdmin || data.data?.customer?.role === 'admin') {
+        if (data.data?.redirectUrl === '/admin' || data.data?.isAdmin) {
           toast.success('Welcome Admin! Access granted.')
           window.location.href = '/admin'
         } else {

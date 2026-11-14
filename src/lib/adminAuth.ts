@@ -33,11 +33,10 @@ export async function checkIsAdmin(request?: NextRequest): Promise<boolean> {
 
       const { data: customer } = await supabase
         .from('customers')
-        .select('email, role')
+        .select('email')
         .eq('id', user.id)
         .maybeSingle()
 
-      if (customer?.role === 'admin') return true
       if (customer?.email && ADMIN_EMAILS.includes(customer.email.toLowerCase())) return true
     }
 

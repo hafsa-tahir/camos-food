@@ -35,7 +35,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultTab = 'logi
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || 'Login failed')
 
-        if (data.data?.redirectUrl === '/admin' || data.data?.isAdmin || data.data?.customer?.role === 'admin') {
+        if (data.data?.redirectUrl === '/admin' || data.data?.isAdmin) {
           toast.success('Welcome Admin! Access granted.')
           onClose()
           window.location.href = '/admin'

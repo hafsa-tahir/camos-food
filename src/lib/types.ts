@@ -97,7 +97,7 @@ export interface Order {
   subtotal: number
   discount_amount: number
   total: number
-  status: 'pending' | 'paid' | 'preparing' | 'delivered' | 'cancelled'
+  status: 'pending' | 'paid' | 'confirmed' | 'preparing' | 'delivered' | 'cancelled'
   stripe_payment_intent_id?: string
   stripe_session_id?: string
   delivery_address?: string
@@ -131,6 +131,19 @@ export interface DailyMealLog {
   fat_g: number
   quantity: number
   created_at: string
+}
+
+export interface WeeklySubscription {
+  id: string
+  user_name: string
+  phone: string
+  email?: string
+  package_plan: string
+  status: 'active' | 'paused' | 'expired'
+  start_date?: string
+  notes?: string
+  created_at: string
+  updated_at?: string
 }
 
 // ============================================================

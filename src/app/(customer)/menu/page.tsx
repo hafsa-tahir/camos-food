@@ -133,7 +133,7 @@ function MenuContent() {
             Our Menu & Daily Schedule
           </h1>
           <p className="text-sm sm:text-base font-bold text-[#C7230F]/70 max-w-2xl">
-            Because everything is prepared fresh from scratch, our kitchen features <strong>2 signature rotating specials today</strong> alongside our <strong>everyday fresh breakfast menu</strong>. Other dishes are prepared on their designated days.
+            Because everything is prepared fresh from scratch, our kitchen features <strong>3 signature rotating specials today</strong> alongside our <strong>Winter Special Chicken Corn Soup</strong> and <strong>everyday fresh breakfast menu</strong>.
           </p>
         </div>
 
@@ -150,12 +150,15 @@ function MenuContent() {
                   <UtensilsCrossed size={12} />
                   <span>{todayPlan.desiDishName}</span>
                 </span>
-                <span>&</span>
                 <span className="bg-[#C7230F]/10 text-[#C7230F] px-2.5 py-0.5 rounded-lg text-xs font-black inline-flex items-center gap-1.5">
                   <Leaf size={12} />
                   <span>{todayPlan.dietDishName}</span>
                 </span>
-                <span>+ All Breakfast</span>
+                <span className="bg-[#C7230F]/10 text-[#C7230F] px-2.5 py-0.5 rounded-lg text-xs font-black inline-flex items-center gap-1.5">
+                  <Sparkles size={12} />
+                  <span>{todayPlan.winterDishName}</span>
+                </span>
+                <span>+ Winter Corn Soup & All Breakfast</span>
               </div>
               <div className="text-xs text-[#C7230F]/70 font-semibold mt-0.5">
                 Items not scheduled for today are clearly marked with their scheduled day and cannot be ordered today.

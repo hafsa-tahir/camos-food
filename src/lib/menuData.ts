@@ -344,6 +344,99 @@ export const REAL_MENU_ITEMS: FoodItem[] = [
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
+  {
+    id: 'camos-chicken-corn-soup',
+    name: 'Chicken Corn Soup',
+    description: 'Steaming hot winter special chicken corn soup slow-simmered with shredded halal chicken breast, sweet golden corn, egg ribbons, and black pepper. Warm meals this winter!',
+    price: 500,
+    calories: 320,
+    protein_g: 28,
+    carbs_g: 34,
+    fat_g: 8,
+    category: 'starter',
+    tags: ['Winter Special', 'Warm & Comforting', 'Homemade Goodness', 'halal', 'high-protein', 'popular'],
+    image_url: '/items/chicken-corn-soup.jpg',
+    status: 'active',
+    is_featured: true,
+    sort_order: 20,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+]
+
+export const WINTER_PLAN_DISHES: FoodItem[] = [
+  {
+    id: 'camos-kofta-curry',
+    name: 'Kofta Curry',
+    description: 'Hand-rolled tender spiced meatballs simmered in a rich, velvety tomato and caramelized onion curry gravy with fresh cilantro and green chillies. Winter 7-Day Desi Plan Tuesday Special.',
+    price: 650,
+    calories: 560,
+    protein_g: 42,
+    carbs_g: 16,
+    fat_g: 34,
+    category: 'main',
+    tags: ['Winter Menu', 'Homemade With Love', 'halal', 'pakistani', 'high-protein'],
+    image_url: '/items/kofta-curry.jpg',
+    status: 'active',
+    is_featured: false,
+    sort_order: 21,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'camos-matar-qeema',
+    name: 'Matar Qeema',
+    description: 'Homestyle spiced minced meat slow-cooked with sweet green peas, tomatoes, fresh ginger, and fragrant whole spices. Winter 7-Day Desi Plan Wednesday Special.',
+    price: 600,
+    calories: 510,
+    protein_g: 40,
+    carbs_g: 18,
+    fat_g: 30,
+    category: 'main',
+    tags: ['Winter Menu', 'Homemade Goodness', 'halal', 'pakistani', 'high-protein'],
+    image_url: '/items/matar-qeema.jpg',
+    status: 'active',
+    is_featured: false,
+    sort_order: 22,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'camos-chicken-korma',
+    name: 'Chicken Korma',
+    description: 'Royal Mughlai-style bone-in chicken braised in a rich yogurt, golden fried onion, and cardamom gravy topped with toasted almonds. Winter 7-Day Desi Plan Saturday Special.',
+    price: 650,
+    calories: 610,
+    protein_g: 42,
+    carbs_g: 14,
+    fat_g: 38,
+    category: 'main',
+    tags: ['Winter Menu', 'Rich Flavors', 'halal', 'pakistani', 'high-protein'],
+    image_url: '/items/chicken-korma.jpg',
+    status: 'active',
+    is_featured: false,
+    sort_order: 23,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'camos-beef-nihari',
+    name: 'Beef Nihari',
+    description: 'Slow-simmered overnight tender beef shank stew in a rich, velvety nihari masala gravy, garnished with julienned ginger, green chillies, and fresh coriander. Winter 7-Day Desi Plan Sunday Special.',
+    price: 750,
+    calories: 680,
+    protein_g: 48,
+    carbs_g: 18,
+    fat_g: 42,
+    category: 'main',
+    tags: ['Winter Menu', 'Sunday Feast', 'halal', 'pakistani', 'high-protein'],
+    image_url: '/items/beef-nihari.jpg',
+    status: 'active',
+    is_featured: false,
+    sort_order: 24,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
 ]
 
 export function enrichFoodItem(rawItem: any): FoodItem {
@@ -354,7 +447,8 @@ export function enrichFoodItem(rawItem: any): FoodItem {
   const cleanName = rawName.replace(/^camos?\s+|^camo's\s+/i, '').trim()
 
   // Match with local baseline item if possible
-  const matched = REAL_MENU_ITEMS.find((i) => {
+  const allLocalItems = [...REAL_MENU_ITEMS, ...WINTER_PLAN_DISHES]
+  const matched = allLocalItems.find((i) => {
     const baselineName = i.name.toLowerCase()
     return (
       i.id.toLowerCase() === rawId ||
@@ -376,12 +470,24 @@ export function enrichFoodItem(rawItem: any): FoodItem {
     cleanName.includes('paratha')
   ) {
     category = 'breakfast'
+  } else if (cleanName.includes('soup')) {
+    category = 'starter'
   }
 
   // Smart image mapping to prevent fallback biryani on breakfast/other dishes
   let image_url = rawItem.image_url || matched?.image_url
   if (!image_url || image_url === '/hero-plate.jpg') {
-    if (cleanName.includes('french toast') || cleanName.includes('toast')) {
+    if (cleanName.includes('soup')) {
+      image_url = '/items/chicken-corn-soup.jpg'
+    } else if (cleanName.includes('kofta')) {
+      image_url = '/items/kofta-curry.jpg'
+    } else if (cleanName.includes('matar qeema')) {
+      image_url = '/items/matar-qeema.jpg'
+    } else if (cleanName.includes('korma')) {
+      image_url = '/items/chicken-korma.jpg'
+    } else if (cleanName.includes('nihari')) {
+      image_url = '/items/beef-nihari.jpg'
+    } else if (cleanName.includes('french toast') || cleanName.includes('toast')) {
       image_url = '/items/french-toast.jpg'
     } else if (cleanName.includes('pancake')) {
       image_url = '/items/pancakes-chai.jpg'

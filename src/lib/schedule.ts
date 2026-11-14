@@ -15,6 +15,9 @@ export interface DailySchedulePlan {
   desiDishId: string
   desiDishName: string
   desiTagline: string
+  winterDishId: string
+  winterDishName: string
+  winterTagline: string
 }
 
 export const WEEKLY_SCHEDULE: Record<DayOfWeek, DailySchedulePlan> = {
@@ -26,6 +29,9 @@ export const WEEKLY_SCHEDULE: Record<DayOfWeek, DailySchedulePlan> = {
     desiDishId: 'camos-chicken-karahi',
     desiDishName: 'Chicken Karahi',
     desiTagline: 'Authentic Wok-Cooked Desi Karahi with Fresh Ginger',
+    winterDishId: 'camos-chicken-karahi',
+    winterDishName: 'Chicken Karahi',
+    winterTagline: 'Winter Menu Special • Sizzling Wok-Cooked Chicken Karahi',
   },
   Tuesday: {
     day: 'Tuesday',
@@ -35,6 +41,9 @@ export const WEEKLY_SCHEDULE: Record<DayOfWeek, DailySchedulePlan> = {
     desiDishId: 'camos-kabab-masala',
     desiDishName: 'Kabab Masala',
     desiTagline: 'Spiced Beef Kababs Simmered in Rich Tomato Masala Gravy',
+    winterDishId: 'camos-kofta-curry',
+    winterDishName: 'Kofta Curry',
+    winterTagline: 'Winter Menu Special • Juicy Meatballs in Rich Traditional Gravy',
   },
   Wednesday: {
     day: 'Wednesday',
@@ -44,6 +53,9 @@ export const WEEKLY_SCHEDULE: Record<DayOfWeek, DailySchedulePlan> = {
     desiDishId: 'camos-chicken-qeema',
     desiDishName: 'Chicken Qeema',
     desiTagline: 'Slow-Cooked Minced Chicken with Fragrant Green Peas & Spices',
+    winterDishId: 'camos-matar-qeema',
+    winterDishName: 'Matar Qeema',
+    winterTagline: 'Winter Menu Special • Homestyle Minced Meat & Sweet Green Peas',
   },
   Thursday: {
     day: 'Thursday',
@@ -53,6 +65,9 @@ export const WEEKLY_SCHEDULE: Record<DayOfWeek, DailySchedulePlan> = {
     desiDishId: 'camos-makhni-handi',
     desiDishName: 'Makhni Handi',
     desiTagline: 'Velvety Slow-Cooked Butter Chicken in Traditional Handi',
+    winterDishId: 'camos-makhni-handi',
+    winterDishName: 'Chicken Makhni Handi',
+    winterTagline: 'Winter Menu Special • Creamy Butter Chicken in Clay Handi',
   },
   Friday: {
     day: 'Friday',
@@ -62,6 +77,9 @@ export const WEEKLY_SCHEDULE: Record<DayOfWeek, DailySchedulePlan> = {
     desiDishId: 'camos-chicken-pulao',
     desiDishName: 'Chicken Pulao',
     desiTagline: 'Aromatic Friday Basmati Pulao with Mint Raita & Salad',
+    winterDishId: 'camos-chicken-biryani',
+    winterDishName: 'Chicken Biryani',
+    winterTagline: 'Winter Menu Special • Fragrant Friday Saffron Basmati Biryani',
   },
   Saturday: {
     day: 'Saturday',
@@ -71,6 +89,9 @@ export const WEEKLY_SCHEDULE: Record<DayOfWeek, DailySchedulePlan> = {
     desiDishId: 'camos-creamy-chicken-pasta',
     desiDishName: 'Creamy Chicken Pasta',
     desiTagline: 'Al Dente Penne Tossed in Homemade Garlic Parmesan Alfredo',
+    winterDishId: 'camos-chicken-korma',
+    winterDishName: 'Chicken Korma',
+    winterTagline: 'Winter Menu Special • Royal Braised Chicken Korma with Almonds',
   },
   Sunday: {
     day: 'Sunday',
@@ -80,6 +101,9 @@ export const WEEKLY_SCHEDULE: Record<DayOfWeek, DailySchedulePlan> = {
     desiDishId: 'camos-chicken-biryani',
     desiDishName: 'Chicken Biryani',
     desiTagline: 'Royal Hyderabadi Saffron Basmati Biryani with Tender Chicken',
+    winterDishId: 'camos-beef-nihari',
+    winterDishName: 'Beef Nihari',
+    winterTagline: 'Winter Menu Special • Slow-Simmered Sunday Beef Shank Nihari',
   },
 }
 
@@ -132,6 +156,8 @@ export const DISH_DAY_MAPPING: Record<string, DayOfWeek> = {
   'high protein wrap': 'Tuesday',
   'camos-kabab-masala': 'Tuesday',
   'kabab masala': 'Tuesday',
+  'camos-kofta-curry': 'Tuesday',
+  'kofta curry': 'Tuesday',
 
   // Wednesday
   'camos-chicken-chilli-dry': 'Wednesday',
@@ -141,6 +167,8 @@ export const DISH_DAY_MAPPING: Record<string, DayOfWeek> = {
   'chicken qeema': 'Wednesday',
   'beef qeema': 'Wednesday',
   'qeema': 'Wednesday',
+  'camos-matar-qeema': 'Wednesday',
+  'matar qeema': 'Wednesday',
 
   // Thursday
   'camos-high-protein-chicken-burger': 'Thursday',
@@ -148,6 +176,7 @@ export const DISH_DAY_MAPPING: Record<string, DayOfWeek> = {
   'high protein chicken burger': 'Thursday',
   'camos-makhni-handi': 'Thursday',
   'makhni handi': 'Thursday',
+  'chicken makhni handi': 'Thursday',
   'butter chicken': 'Thursday',
 
   // Friday
@@ -164,6 +193,8 @@ export const DISH_DAY_MAPPING: Record<string, DayOfWeek> = {
   'camos-creamy-chicken-pasta': 'Saturday',
   'creamy chicken pasta': 'Saturday',
   'special pasta': 'Saturday',
+  'camos-chicken-korma': 'Saturday',
+  'chicken korma': 'Saturday',
 
   // Sunday
   'camos-honey-garlic-mac-n-cheese': 'Sunday',
@@ -172,13 +203,15 @@ export const DISH_DAY_MAPPING: Record<string, DayOfWeek> = {
   'camos-chicken-biryani': 'Sunday',
   'chicken biryani': 'Sunday',
   'royal chicken biryani': 'Sunday',
+  'camos-beef-nihari': 'Sunday',
+  'beef nihari': 'Sunday',
 }
 
 export interface DishAvailability {
   isAvailableToday: boolean
   isBreakfast: boolean
   isSpecialToday: boolean
-  specialType?: 'desi' | 'diet'
+  specialType?: 'desi' | 'diet' | 'winter'
   cookedOnDay?: DayOfWeek
   statusLabel: string
   badgeLabel: string
@@ -209,6 +242,18 @@ export function getDishAvailability(
       isSpecialToday: false,
       statusLabel: 'Available Today',
       badgeLabel: 'Daily Breakfast',
+    }
+  }
+
+  // 1b. Winter Special Chicken Corn Soup is ALWAYS available every single day
+  if (idLower === 'camos-chicken-corn-soup' || nameLower.includes('corn soup') || nameLower.includes('soup')) {
+    return {
+      isAvailableToday: true,
+      isBreakfast: false,
+      isSpecialToday: true,
+      specialType: 'winter',
+      statusLabel: 'Available Today (Winter Special)',
+      badgeLabel: 'Winter Special',
     }
   }
 
@@ -248,6 +293,24 @@ export function getDishAvailability(
       cookedOnDay: currentDay,
       statusLabel: "Available Today (Today's Diet Special)",
       badgeLabel: "Today's Diet Special",
+    }
+  }
+
+  // Check if it's today's Winter Dish
+  const isTodayWinter =
+    idLower === todayPlan.winterDishId.toLowerCase() ||
+    nameLower === todayPlan.winterDishName.toLowerCase() ||
+    (nameLower.length > 5 && todayPlan.winterDishName.toLowerCase().includes(nameLower))
+
+  if (isTodayWinter) {
+    return {
+      isAvailableToday: true,
+      isBreakfast: false,
+      isSpecialToday: true,
+      specialType: 'winter',
+      cookedOnDay: currentDay,
+      statusLabel: "Available Today (Today's Winter Special)",
+      badgeLabel: "Today's Winter Special",
     }
   }
 

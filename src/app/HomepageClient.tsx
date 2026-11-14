@@ -34,7 +34,7 @@ import {
   getPakistanFormattedDate,
   DayOfWeek,
 } from '@/lib/schedule'
-import { REAL_MENU_ITEMS, enrichFoodItem } from '@/lib/menuData'
+import { REAL_MENU_ITEMS, WINTER_PLAN_DISHES, enrichFoodItem } from '@/lib/menuData'
 import { useCartStore } from '@/store/cartStore'
 import { formatPrice } from '@/lib/utils'
 
@@ -89,12 +89,15 @@ export default function HomepageClient() {
   const resolveItem = (id: string, name: string) => {
     const fromApi = allMenu.find((i) => i.id === id || i.name.toLowerCase() === name.toLowerCase())
     if (fromApi) return fromApi
-    const fromReal = REAL_MENU_ITEMS.find((i) => i.id === id || i.name.toLowerCase() === name.toLowerCase())
+    const allLocal = [...REAL_MENU_ITEMS, ...WINTER_PLAN_DISHES]
+    const fromReal = allLocal.find((i) => i.id === id || i.name.toLowerCase() === name.toLowerCase())
     return fromReal ? enrichFoodItem(fromReal) : null
   }
 
   const todayDesi = resolveItem(todayPlan.desiDishId, todayPlan.desiDishName)
   const todayDiet = resolveItem(todayPlan.dietDishId, todayPlan.dietDishName)
+  const todayWinter = resolveItem(todayPlan.winterDishId, todayPlan.winterDishName)
+  const winterSoup = resolveItem('camos-chicken-corn-soup', 'Chicken Corn Soup')
 
   return (
     <div className="bg-[#FFFFEF] min-h-screen font-sans text-[#C7230F] overflow-x-hidden relative">
@@ -206,24 +209,24 @@ export default function HomepageClient() {
             </p>
           </div>
 
-          {/* 2 Main Daily Specials (Desi & Diet) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+          {/* 3 Main Daily Specials (Desi, Diet & Winter Menu) */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
             {/* 1. Today's Desi Special */}
             {todayDesi && (
-              <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <span className="bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
-                    <UtensilsCrossed size={13} />
-                    <span>TODAY'S DESI SPECIAL</span>
-                  </span>
-                  <span className="text-xs font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-3 py-1 rounded-full uppercase flex items-center gap-1">
-                    <Calendar size={12} />
-                    <span>Cooked Every {todayDay}</span>
-                  </span>
-                </div>
+              <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+                    <span className="bg-[#C7230F] text-[#FFFFEF] font-black text-[11px] px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                      <UtensilsCrossed size={12} />
+                      <span>TODAY'S DESI SPECIAL</span>
+                    </span>
+                    <span className="text-[11px] font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-2.5 py-1 rounded-full uppercase flex items-center gap-1">
+                      <Calendar size={11} />
+                      <span>Every {todayDay}</span>
+                    </span>
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-5 items-center my-2">
-                  <div className="relative w-full sm:w-[140px] h-[140px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#C7230F]/20 shrink-0">
+                  <div className="relative w-full h-[180px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#C7230F]/20 mb-4">
                     <Image
                       src={todayDesi.image_url || '/items/chicken-karahi.jpg'}
                       alt={todayDesi.name}
@@ -233,72 +236,70 @@ export default function HomepageClient() {
                     />
                   </div>
 
-                  <div>
-                    <h3 className="font-serif font-black text-2xl text-[#C7230F] leading-tight mb-2">
-                      {todayDesi.name}
-                    </h3>
-                    <p className="text-xs text-[#C7230F]/80 font-medium leading-relaxed mb-3 line-clamp-2">
-                      {todayPlan.desiTagline || todayDesi.description}
-                    </p>
-                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-[#C7230F]">
-                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                        <Flame size={12} /> {todayDesi.calories} kcal
-                      </span>
-                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                        <Dumbbell size={12} /> {todayDesi.protein_g}g Protein
-                      </span>
-                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                        <Check size={12} /> 100% Halal
-                      </span>
-                    </div>
+                  <h3 className="font-serif font-black text-xl text-[#C7230F] leading-tight mb-1.5">
+                    {todayDesi.name}
+                  </h3>
+                  <p className="text-xs text-[#C7230F]/80 font-medium leading-relaxed mb-3 line-clamp-2">
+                    {todayPlan.desiTagline || todayDesi.description}
+                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap text-[11px] font-bold text-[#C7230F]">
+                    <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Flame size={11} /> {todayDesi.calories} kcal
+                    </span>
+                    <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Dumbbell size={11} /> {todayDesi.protein_g}g Protein
+                    </span>
+                    <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Check size={11} /> 100% Halal
+                    </span>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-5 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-4">
+                <div className="mt-5 pt-4 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-3">
                   <div>
                     <div className="text-[10px] font-bold text-[#C7230F]/70 uppercase">Price Today</div>
-                    <div className="text-2xl font-black text-[#C7230F] leading-none">
+                    <div className="text-xl font-black text-[#C7230F] leading-none">
                       {formatPrice(todayDesi.price)}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <Link
                       href={`/menu/${todayDesi.id}`}
-                      className="text-xs font-black text-[#C7230F] bg-white border border-[#C7230F]/30 px-4 py-2.5 rounded-full hover:bg-[#FFFFEF] transition-all no-underline"
+                      className="text-xs font-black text-[#C7230F] bg-white border border-[#C7230F]/30 px-3.5 py-2.5 rounded-full hover:bg-[#FFFFEF] transition-all no-underline"
                     >
-                      View Dish
+                      View
                     </Link>
                     <button
                       onClick={() => {
                         addItem(todayDesi)
                         toast.success(`Added ${todayDesi.name} to cart!`)
                       }}
-                      className="inline-flex items-center gap-2 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-6 py-3 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+                      className="inline-flex items-center gap-1.5 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-4 py-2.5 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
                     >
-                      <ShoppingBag size={15} /> Order for Today
+                      <ShoppingBag size={14} /> Order Today
                     </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* 2. Today's Diet Special (Brand Crimson & Off-White Palette - No Green!) */}
+            {/* 2. Today's Diet Special */}
             {todayDiet && (
-              <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <span className="bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
-                    <Leaf size={13} />
-                    <span>TODAY'S DIET SPECIAL</span>
-                  </span>
-                  <span className="text-xs font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-3 py-1 rounded-full uppercase flex items-center gap-1">
-                    <Calendar size={12} />
-                    <span>Cooked Every {todayDay}</span>
-                  </span>
-                </div>
+              <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+                    <span className="bg-[#A31C0C] text-[#FFFFEF] font-black text-[11px] px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                      <Leaf size={12} />
+                      <span>TODAY'S DIET SPECIAL</span>
+                    </span>
+                    <span className="text-[11px] font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-2.5 py-1 rounded-full uppercase flex items-center gap-1">
+                      <Calendar size={11} />
+                      <span>Every {todayDay}</span>
+                    </span>
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] gap-5 items-center my-2">
-                  <div className="relative w-full sm:w-[140px] h-[140px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#C7230F]/20 shrink-0">
+                  <div className="relative w-full h-[180px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#C7230F]/20 mb-4">
                     <Image
                       src={todayDiet.image_url || '/items/chicken-fajita-rice-bowl.jpg'}
                       alt={todayDiet.name}
@@ -308,50 +309,121 @@ export default function HomepageClient() {
                     />
                   </div>
 
-                  <div>
-                    <h3 className="font-serif font-black text-2xl text-[#C7230F] leading-tight mb-2">
-                      {todayDiet.name}
-                    </h3>
-                    <p className="text-xs text-[#C7230F]/80 font-medium leading-relaxed mb-3 line-clamp-2">
-                      {todayPlan.dietTagline || todayDiet.description}
-                    </p>
-                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-[#C7230F]">
-                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                        <Flame size={12} /> {todayDiet.calories} kcal
-                      </span>
-                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                        <Dumbbell size={12} /> {todayDiet.protein_g}g Protein
-                      </span>
-                      <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2.5 py-0.5 rounded-md flex items-center gap-1">
-                        <Check size={12} /> High Protein
-                      </span>
-                    </div>
+                  <h3 className="font-serif font-black text-xl text-[#C7230F] leading-tight mb-1.5">
+                    {todayDiet.name}
+                  </h3>
+                  <p className="text-xs text-[#C7230F]/80 font-medium leading-relaxed mb-3 line-clamp-2">
+                    {todayPlan.dietTagline || todayDiet.description}
+                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap text-[11px] font-bold text-[#C7230F]">
+                    <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Flame size={11} /> {todayDiet.calories} kcal
+                    </span>
+                    <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Dumbbell size={11} /> {todayDiet.protein_g}g Protein
+                    </span>
+                    <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Check size={11} /> High Protein
+                    </span>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-5 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-4">
+                <div className="mt-5 pt-4 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-3">
                   <div>
                     <div className="text-[10px] font-bold text-[#C7230F]/70 uppercase">Price Today</div>
-                    <div className="text-2xl font-black text-[#C7230F] leading-none">
+                    <div className="text-xl font-black text-[#C7230F] leading-none">
                       {formatPrice(todayDiet.price)}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <Link
                       href={`/menu/${todayDiet.id}`}
-                      className="text-xs font-black text-[#C7230F] bg-white border border-[#C7230F]/30 px-4 py-2.5 rounded-full hover:bg-[#FFFFEF] transition-all no-underline"
+                      className="text-xs font-black text-[#C7230F] bg-white border border-[#C7230F]/30 px-3.5 py-2.5 rounded-full hover:bg-[#FFFFEF] transition-all no-underline"
                     >
-                      View Dish
+                      View
                     </Link>
                     <button
                       onClick={() => {
                         addItem(todayDiet)
                         toast.success(`Added ${todayDiet.name} to cart!`)
                       }}
-                      className="inline-flex items-center gap-2 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-6 py-3 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+                      className="inline-flex items-center gap-1.5 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-4 py-2.5 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
                     >
-                      <ShoppingBag size={15} /> Order for Today
+                      <ShoppingBag size={14} /> Order Today
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 3. Today's Winter Menu Special */}
+            {todayWinter && (
+              <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+                    <span className="bg-[#C7230F] text-[#FFFFEF] font-black text-[11px] px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                      <Sparkles size={12} />
+                      <span>TODAY'S WINTER SPECIAL</span>
+                    </span>
+                    <span className="text-[11px] font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-2.5 py-1 rounded-full uppercase flex items-center gap-1">
+                      <Calendar size={11} />
+                      <span>Every {todayDay}</span>
+                    </span>
+                  </div>
+
+                  <div className="relative w-full h-[180px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#C7230F]/20 mb-4">
+                    <Image
+                      src={todayWinter.image_url || '/items/chicken-karahi.jpg'}
+                      alt={todayWinter.name}
+                      fill
+                      unoptimized
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+
+                  <h3 className="font-serif font-black text-xl text-[#C7230F] leading-tight mb-1.5">
+                    {todayWinter.name}
+                  </h3>
+                  <p className="text-xs text-[#C7230F]/80 font-medium leading-relaxed mb-3 line-clamp-2">
+                    {todayPlan.winterTagline || todayWinter.description}
+                  </p>
+                  <div className="flex items-center gap-1.5 flex-wrap text-[11px] font-bold text-[#C7230F]">
+                    <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Flame size={11} /> {todayWinter.calories} kcal
+                    </span>
+                    <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Dumbbell size={11} /> {todayWinter.protein_g}g Protein
+                    </span>
+                    <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <Check size={11} /> Winter Plan
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-3">
+                  <div>
+                    <div className="text-[10px] font-bold text-[#C7230F]/70 uppercase">Price Today</div>
+                    <div className="text-xl font-black text-[#C7230F] leading-none">
+                      {formatPrice(todayWinter.price)}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/menu/${todayWinter.id}`}
+                      className="text-xs font-black text-[#C7230F] bg-white border border-[#C7230F]/30 px-3.5 py-2.5 rounded-full hover:bg-[#FFFFEF] transition-all no-underline"
+                    >
+                      View
+                    </Link>
+                    <button
+                      onClick={() => {
+                        addItem(todayWinter)
+                        toast.success(`Added ${todayWinter.name} to cart!`)
+                      }}
+                      className="inline-flex items-center gap-1.5 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-4 py-2.5 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+                    >
+                      <ShoppingBag size={14} /> Order Today
                     </button>
                   </div>
                 </div>
@@ -403,6 +475,205 @@ export default function HomepageClient() {
               <span className="group-hover:text-[#FFFFEF] transition-colors">Want all 7 days planned? View Weekly Subscriptions on Deals Page</span>
               <ArrowRight size={14} className="group-hover:text-[#FFFFEF] transition-colors" />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── NEW WINTER MENU DEAL (RS 4,400) & HOT CHICKEN CORN SOUP (RS 500) SECTION ── */}
+      <section className="py-14 md:py-20 bg-[#FFFFEF] border-b-2 border-[#C7230F]/15">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-[50px]">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-4 py-2 rounded-full uppercase tracking-wider mb-3 shadow-md">
+              <Sparkles size={13} className="text-[#FFFFEF]" />
+              <span>WARM MEALS THIS WINTER • LIMITED SEASON SPECIAL</span>
+            </div>
+            <h2 className="font-serif font-black text-3xl sm:text-4xl md:text-5xl text-[#C7230F] mb-3">
+              New Winter Deal & Hot Corn Soup
+            </h2>
+            <p className="text-xs sm:text-sm text-[#C7230F]/80 font-semibold leading-relaxed">
+              Cozy up this season with our brand-new <strong>7-Day Winter Desi Meal Plan (Rs 4,400)</strong> and steaming hot homemade <strong>Chicken Corn Soup (Rs 500)</strong>!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            {/* Left: 7-Day Winter Desi Meal Plan (Rs 4,400) */}
+            <div className="lg:col-span-7 bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden">
+              <div>
+                <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                  <span className="bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
+                    NEW 7-DAY WINTER DESI PLAN
+                  </span>
+                  <span className="bg-[#FFFFEF] text-[#C7230F] border-2 border-[#C7230F] font-black text-sm px-4 py-1 rounded-full">
+                    Only Rs 4,400 / Week
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-6 items-start mb-6">
+                  <div className="relative w-full sm:w-[200px] h-[270px] rounded-2xl overflow-hidden border-2 border-[#C7230F]/25 shadow-md bg-[#FFFFEF] shrink-0 mx-auto">
+                    <Image
+                      src="/posters/winter-menu-poster.jpg"
+                      alt="Camo's Foods Winter Menu 7-Day Desi Meal Plan"
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <div>
+                    <h3 className="font-serif font-black text-2xl sm:text-3xl text-[#C7230F] leading-tight mb-2">
+                      7-Day Winter Desi Meal Plan
+                    </h3>
+                    <p className="text-xs text-[#C7230F]/80 font-semibold leading-relaxed mb-4">
+                      A wholesome 7-day winter feast cooked fresh every morning with 100% Halal meat, rich gravies, and authentic home-style spices.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-[#C7230F]">
+                      {[
+                        { day: 'Mon', dish: 'Chicken Karahi' },
+                        { day: 'Tue', dish: 'Kofta Curry' },
+                        { day: 'Wed', dish: 'Matar Qeema' },
+                        { day: 'Thu', dish: 'Chicken Makhni Handi' },
+                        { day: 'Fri', dish: 'Chicken Biryani' },
+                        { day: 'Sat', dish: 'Chicken Korma' },
+                        { day: 'Sun', dish: 'Beef Nihari' },
+                      ].map((d) => (
+                        <div
+                          key={d.day}
+                          className="bg-[#FFFFEF] border border-[#C7230F]/20 rounded-xl px-3 py-1.5 flex items-center gap-2"
+                        >
+                          <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2 py-0.5 rounded-md uppercase">
+                            {d.day}
+                          </span>
+                          <span className="truncate font-extrabold">{d.dish}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-5 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <div className="text-[10px] font-black text-[#C7230F]/70 uppercase tracking-wider">
+                    Full 7-Day Winter Package
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-[#C7230F] leading-none">
+                    Rs 4,400
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 flex-wrap">
+                  <Link
+                    href="/deals"
+                    className="text-xs font-black text-[#C7230F] bg-white border-2 border-[#C7230F]/30 px-5 py-3 rounded-full hover:bg-[#FFFFEF] transition-all no-underline uppercase tracking-wider"
+                  >
+                    View Schedule
+                  </Link>
+                  <button
+                    onClick={() => {
+                      addItem({
+                        id: `subscription-winter_7-${Date.now()}`,
+                        name: '7-Day Winter Desi Plan',
+                        price: 4400,
+                        image_url: '/posters/winter-menu-poster.jpg',
+                        category: 'subscription',
+                        calories: 620,
+                        protein_g: 42,
+                        carbs_g: 45,
+                        fat_g: 28,
+                        tags: ['subscription', 'winter', 'desi'],
+                        status: 'active',
+                        is_featured: true,
+                        sort_order: 1,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                      })
+                      toast.success('7-Day Winter Desi Plan (Rs 4,400) added to cart!')
+                    }}
+                    className="inline-flex items-center gap-2 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-6 py-3.5 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+                  >
+                    <ShoppingBag size={15} /> Subscribe — Rs 4,400
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Winter Special Chicken Corn Soup (Rs 500) */}
+            <div className="lg:col-span-5 bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden">
+              <div>
+                <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+                  <span className="bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
+                    <Flame size={13} />
+                    <span>WINTER SOUP SPECIAL</span>
+                  </span>
+                  <span className="text-xs font-black text-[#C7230F] bg-[#FFFFEF] border border-[#C7230F]/30 px-3 py-1 rounded-full uppercase">
+                    Available Every Day
+                  </span>
+                </div>
+
+                <div className="relative w-full h-[210px] rounded-2xl overflow-hidden bg-[#FFFFEF] border-2 border-[#C7230F]/20 mb-5">
+                  <Image
+                    src="/items/chicken-corn-soup.jpg"
+                    alt="Chicken Corn Soup"
+                    fill
+                    unoptimized
+                    className="object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+
+                <h3 className="font-serif font-black text-2xl sm:text-3xl text-[#C7230F] leading-tight mb-2">
+                  Hot Chicken Corn Soup
+                </h3>
+                <p className="text-xs sm:text-sm text-[#C7230F]/80 font-medium leading-relaxed mb-4">
+                  Rich, comforting homemade winter soup loaded with tender shredded halal chicken, sweet golden corn kernels, and silky egg ribbons.
+                </p>
+
+                <div className="flex items-center gap-2 flex-wrap text-xs font-bold text-[#C7230F] mb-4">
+                  <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-3 py-1 rounded-lg flex items-center gap-1">
+                    <Flame size={13} /> 320 kcal
+                  </span>
+                  <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-3 py-1 rounded-lg flex items-center gap-1">
+                    <Dumbbell size={13} /> 28g Protein
+                  </span>
+                  <span className="bg-[#FFFFEF] border border-[#C7230F]/20 px-3 py-1 rounded-lg flex items-center gap-1">
+                    <Check size={13} /> Served Piping Hot
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-5 border-t border-[#C7230F]/15 flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <div className="text-[10px] font-black text-[#C7230F]/70 uppercase tracking-wider">
+                    Winter Bowl Price
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-[#C7230F] leading-none">
+                    Rs 500
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  {winterSoup && (
+                    <>
+                      <Link
+                        href={`/menu/${winterSoup.id}`}
+                        className="text-xs font-black text-[#C7230F] bg-white border-2 border-[#C7230F]/30 px-4 py-3 rounded-full hover:bg-[#FFFFEF] transition-all no-underline uppercase tracking-wider"
+                      >
+                        Details
+                      </Link>
+                      <button
+                        onClick={() => {
+                          addItem(winterSoup)
+                          toast.success('Added Hot Chicken Corn Soup (Rs 500) to cart!')
+                        }}
+                        className="inline-flex items-center gap-2 bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-6 py-3.5 rounded-full cursor-pointer border-none shadow-md hover:shadow-lg transition-all uppercase tracking-wider"
+                      >
+                        <ShoppingBag size={15} /> Order Soup — Rs 500
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
