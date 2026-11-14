@@ -245,15 +245,14 @@ export function getDishAvailability(
     }
   }
 
-  // 1b. Winter Special Chicken Corn Soup is ALWAYS available every single day
+  // 1b. Winter Special Chicken Corn Soup is ALWAYS available every single day (just like breakfast)
   if (idLower === 'camos-chicken-corn-soup' || nameLower.includes('corn soup') || nameLower.includes('soup')) {
     return {
       isAvailableToday: true,
-      isBreakfast: false,
-      isSpecialToday: true,
-      specialType: 'winter',
-      statusLabel: 'Available Today (Winter Special)',
-      badgeLabel: 'Winter Special',
+      isBreakfast: true,
+      isSpecialToday: false,
+      statusLabel: 'Available Today',
+      badgeLabel: 'Available Daily',
     }
   }
 

@@ -81,7 +81,7 @@ export default function FoodCard({ item, discount }: FoodCardProps) {
               ) : availability.isBreakfast ? (
                 <span className="bg-[#C7230F] text-[#FFFFEF] text-[11px] font-black px-3 py-1.5 rounded-xl shadow-xs uppercase tracking-wide flex items-center gap-1.5">
                   <Coffee size={11} />
-                  <span>Daily Breakfast</span>
+                  <span>{availability.badgeLabel || 'Daily Breakfast'}</span>
                 </span>
               ) : (
                 <span className="bg-[#FFFFEF] text-[#C7230F] text-xs font-extrabold px-3 py-1.5 rounded-xl border border-[#C7230F]/20 shadow-xs capitalize">

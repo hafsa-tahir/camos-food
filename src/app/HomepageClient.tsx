@@ -30,6 +30,7 @@ import FoodCard from '@/components/ui/FoodCard'
 import { toast } from 'sonner'
 import {
   WEEKLY_SCHEDULE,
+  getDishAvailability,
   getPakistanDayOfWeek,
   getPakistanFormattedDate,
   DayOfWeek,
@@ -49,7 +50,8 @@ export default function HomepageClient() {
   const [email, setEmail] = useState('')
 
   useEffect(() => {
-    setTodayDay(getPakistanDayOfWeek())
+    const currentDay = getPakistanDayOfWeek()
+    setTodayDay(currentDay)
     setTodayFormatted(getPakistanFormattedDate())
 
     setLoading(true)
@@ -62,8 +64,29 @@ export default function HomepageClient() {
       .then(({ data }) => {
         if (data?.items && Array.isArray(data.items)) {
           setAllMenu(data.items)
-          const featured = data.items.filter((i: FoodItem) => i.is_featured)
-          setPopular(featured.length > 0 ? featured.slice(0, 3) : data.items.slice(0, 3))
+
+          // Combine API items with Winter Plan daily dishes so today's winter special can also be included
+          const existingNames = new Set(data.items.map((i: FoodItem) => i.name.toLowerCase()))
+          const winterExtras = WINTER_PLAN_DISHES.filter((w) => !existingNames.has(w.name.toLowerCase())).map(enrichFoodItem)
+          const combined = [...data.items, ...winterExtras]
+
+          // Strictly filter to ONLY items available today (Today's Deals Dishes, Everyday Soup, and Everyday Breakfast)
+          const availableToday = combined.filter((i: FoodItem) => {
+            const avail = getDishAvailability(i, currentDay)
+            return avail.isAvailableToday && i.status !== 'inactive'
+          })
+
+          // Prioritize Today's Rotating Deal Specials + Chicken Corn Soup + Popular Breakfast items
+          availableToday.sort((a: FoodItem, b: FoodItem) => {
+            const availA = getDishAvailability(a, currentDay)
+            const availB = getDishAvailability(b, currentDay)
+            const scoreA = availA.isSpecialToday ? 3 : a.name.toLowerCase().includes('soup') ? 2 : 1
+            const scoreB = availB.isSpecialToday ? 3 : b.name.toLowerCase().includes('soup') ? 2 : 1
+            if (scoreB !== scoreA) return scoreB - scoreA
+            return (a.sort_order ?? 99) - (b.sort_order ?? 99)
+          })
+
+          setPopular(availableToday.slice(0, 6))
         } else {
           setPopular([])
         }
@@ -431,7 +454,7 @@ export default function HomepageClient() {
             )}
           </div>
 
-          {/* Everyday Breakfast Banner (Crimson & Off-White Palette) */}
+          {/* Everyday Breakfast & Hot Chicken Corn Soup Banner */}
           <div className="bg-white border-2 border-[#C7230F]/20 rounded-[32px] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-md mb-8">
             <div className="flex items-center gap-5 text-center md:text-left flex-col md:flex-row">
               <div className="w-16 h-16 rounded-2xl bg-[#C7230F]/10 text-[#C7230F] flex items-center justify-center font-black text-2xl shrink-0 border border-[#C7230F]/20 shadow-xs">
@@ -440,22 +463,34 @@ export default function HomepageClient() {
               <div>
                 <div className="flex items-center gap-2 justify-center md:justify-start mb-1 flex-wrap">
                   <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                    AVAILABLE DAILY
+                    AVAILABLE EVERY SINGLE DAY
                   </span>
                   <span className="text-xs font-bold text-[#C7230F]">
                     08:00 AM – 11:00 PM
                   </span>
                 </div>
                 <h3 className="font-serif font-black text-xl sm:text-2xl text-[#C7230F] mb-1">
-                  Desi Breakfast & Steaming Chai
+                  Desi Breakfast, Steaming Chai & Hot Chicken Corn Soup
                 </h3>
                 <p className="text-xs text-[#C7230F]/80 font-medium max-w-xl">
-                  Cheese Omelets, Golden French Toast, Layered Paratha Anda Chai, and Stacked Pancakes are freshly cooked and available every day of the week!
+                  Hot Chicken Corn Soup (Rs 500), Cheese Omelets, Golden French Toast, Layered Paratha Anda Chai, and Stacked Pancakes are freshly cooked and available every day of the week!
                 </p>
               </div>
             </div>
 
-            <div className="shrink-0 flex items-center gap-3">
+            <div className="shrink-0 flex items-center gap-3 flex-wrap justify-center">
+              {winterSoup && (
+                <button
+                  onClick={() => {
+                    addItem(winterSoup)
+                    toast.success('Added Hot Chicken Corn Soup (Rs 500) to cart!')
+                  }}
+                  className="bg-white hover:bg-[#FFFFEF] text-[#C7230F] border-2 border-[#C7230F] font-black text-xs px-6 py-3 rounded-full uppercase tracking-wider cursor-pointer shadow-xs transition-all inline-flex items-center gap-2"
+                >
+                  <ShoppingBag size={14} />
+                  <span>Order Soup — Rs 500</span>
+                </button>
+              )}
               <Link
                 href="/menu?category=breakfast"
                 className="bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] font-black text-xs px-7 py-3.5 rounded-full uppercase tracking-wider no-underline shadow-md hover:shadow-lg transition-all inline-flex items-center gap-2"
