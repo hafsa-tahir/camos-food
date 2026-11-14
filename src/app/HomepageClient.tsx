@@ -495,11 +495,11 @@ export default function HomepageClient() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left: 7-Day Winter Desi Meal Plan (Rs 4,400) */}
             <div className="lg:col-span-7 bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-8 shadow-xl flex flex-col justify-between relative overflow-hidden">
               <div>
-                <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
                   <span className="bg-[#C7230F] text-[#FFFFEF] font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
                     NEW 7-DAY WINTER DESI PLAN
                   </span>
@@ -508,47 +508,49 @@ export default function HomepageClient() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-6 items-start mb-6">
-                  <div className="relative w-full sm:w-[200px] h-[270px] rounded-2xl overflow-hidden border-2 border-[#C7230F]/25 shadow-md bg-[#FFFFEF] shrink-0 mx-auto">
-                    <Image
-                      src="/posters/winter-menu-poster.jpg"
-                      alt="Camo's Foods Winter Menu 7-Day Desi Meal Plan"
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-                  </div>
+                <h3 className="font-serif font-black text-2xl sm:text-3xl text-[#C7230F] leading-tight mb-2">
+                  7-Day Winter Desi Meal Plan
+                </h3>
+                <p className="text-xs sm:text-sm text-[#C7230F]/80 font-semibold leading-relaxed mb-5">
+                  A wholesome 7-day winter feast cooked fresh every morning with 100% Halal meat, rich gravies, and authentic home-style spices.
+                </p>
 
-                  <div>
-                    <h3 className="font-serif font-black text-2xl sm:text-3xl text-[#C7230F] leading-tight mb-2">
-                      7-Day Winter Desi Meal Plan
-                    </h3>
-                    <p className="text-xs text-[#C7230F]/80 font-semibold leading-relaxed mb-4">
-                      A wholesome 7-day winter feast cooked fresh every morning with 100% Halal meat, rich gravies, and authentic home-style spices.
-                    </p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold text-[#C7230F]">
-                      {[
-                        { day: 'Mon', dish: 'Chicken Karahi' },
-                        { day: 'Tue', dish: 'Kofta Curry' },
-                        { day: 'Wed', dish: 'Matar Qeema' },
-                        { day: 'Thu', dish: 'Chicken Makhni Handi' },
-                        { day: 'Fri', dish: 'Chicken Biryani' },
-                        { day: 'Sat', dish: 'Chicken Korma' },
-                        { day: 'Sun', dish: 'Beef Nihari' },
-                      ].map((d) => (
-                        <div
-                          key={d.day}
-                          className="bg-[#FFFFEF] border border-[#C7230F]/20 rounded-xl px-3 py-1.5 flex items-center gap-2"
-                        >
-                          <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2 py-0.5 rounded-md uppercase">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-bold text-[#C7230F] mb-5">
+                  {[
+                    { day: 'Monday', dish: 'Chicken Karahi', img: '/items/chicken-karahi.jpg', tag: 'Wok Karahi' },
+                    { day: 'Tuesday', dish: 'Kofta Curry', img: '/items/kofta-curry.jpg', tag: 'Rich Gravy' },
+                    { day: 'Wednesday', dish: 'Matar Qeema', img: '/items/matar-qeema.jpg', tag: 'Home Style' },
+                    { day: 'Thursday', dish: 'Chicken Makhni Handi', img: '/items/makhni-handi.jpg', tag: 'Clay Handi' },
+                    { day: 'Friday', dish: 'Chicken Biryani', img: '/items/chicken-biryani.jpg', tag: 'Friday Feast' },
+                    { day: 'Saturday', dish: 'Chicken Korma', img: '/items/chicken-korma.jpg', tag: 'Royal Korma' },
+                    { day: 'Sunday', dish: 'Beef Nihari', img: '/items/beef-nihari.jpg', tag: 'Sunday Special' },
+                  ].map((d, idx) => (
+                    <div
+                      key={d.day}
+                      className={`bg-[#FFFFEF] border border-[#C7230F]/20 rounded-2xl p-2.5 flex items-center gap-3 ${
+                        idx === 6 ? 'sm:col-span-2' : ''
+                      }`}
+                    >
+                      <div className="relative w-11 h-11 rounded-xl overflow-hidden border border-[#C7230F]/20 shrink-0 bg-white">
+                        <Image
+                          src={d.img}
+                          alt={d.dish}
+                          fill
+                          unoptimized
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="bg-[#C7230F] text-[#FFFFEF] text-[9px] font-black px-2 py-0.5 rounded-md uppercase">
                             {d.day}
                           </span>
-                          <span className="truncate font-extrabold">{d.dish}</span>
+                          <span className="text-[10px] font-bold text-[#C7230F]/70">• {d.tag}</span>
                         </div>
-                      ))}
+                        <div className="truncate font-extrabold text-xs sm:text-sm text-[#C7230F]">{d.dish}</div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
@@ -575,7 +577,7 @@ export default function HomepageClient() {
                         id: `subscription-winter_7-${Date.now()}`,
                         name: '7-Day Winter Desi Plan',
                         price: 4400,
-                        image_url: '/posters/winter-menu-poster.jpg',
+                        image_url: '/items/beef-nihari.jpg',
                         category: 'subscription',
                         calories: 620,
                         protein_g: 42,

@@ -196,7 +196,7 @@ export default function DealsPage() {
       id: `subscription-${plan.id}-${Date.now()}`,
       name: plan.title,
       price: plan.price,
-      image_url: plan.id === 'winter_7' ? '/posters/winter-menu-poster.jpg' : '/items/chicken-fajita-rice-bowl.jpg',
+      image_url: plan.id === 'winter_7' ? '/items/beef-nihari.jpg' : '/items/chicken-fajita-rice-bowl.jpg',
       category: 'subscription',
       calories: plan.category === 'diet' ? 450 : 650,
       protein_g: plan.category === 'diet' ? 42 : 30,
@@ -261,22 +261,10 @@ export default function DealsPage() {
 
         {/* FEATURED WINTER MENU DEAL (RS 4,400) & CHICKEN CORN SOUP (RS 500) SHOWCASE */}
         <div className="bg-white border-2 border-[#C7230F] rounded-[36px] p-6 sm:p-10 mb-14 shadow-xl">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-4 flex justify-center">
-              <div className="relative w-full max-w-[280px] h-[380px] rounded-3xl overflow-hidden border-2 border-[#C7230F]/25 shadow-lg bg-[#FFFFEF]">
-                <Image
-                  src="/posters/winter-menu-poster.jpg"
-                  alt="Camo's Foods Winter Menu 7-Day Desi Meal Plan"
-                  fill
-                  unoptimized
-                  className="object-cover"
-                />
-              </div>
-            </div>
-
-            <div className="lg:col-span-8 flex flex-col justify-between gap-6">
-              <div>
-                <div className="flex items-center gap-2 flex-wrap mb-3">
+          <div className="flex flex-col justify-between gap-6">
+            <div>
+              <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="bg-[#C7230F] text-[#FFFFEF] text-xs font-black px-4 py-1.5 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1.5">
                     <Sparkles size={13} />
                     <span>NEW WINTER MENU SPECIAL</span>
@@ -285,71 +273,107 @@ export default function DealsPage() {
                     Warm Meals This Winter
                   </span>
                 </div>
-
-                <h2 className="text-2xl sm:text-4xl font-black text-[#C7230F] leading-tight mb-2">
-                  7-Day Winter Desi Meal Plan — Rs 4,400
-                </h2>
-                <p className="text-xs sm:text-sm text-[#C7230F]/80 font-semibold leading-relaxed mb-5">
-                  Enjoy a heartwarming 7-day rotation of our richest traditional winter dishes: Chicken Karahi (Mon), Kofta Curry (Tue), Matar Qeema (Wed), Chicken Makhni Handi (Thu), Chicken Biryani (Fri), Chicken Korma (Sat), and Sunday Special Beef Nihari!
-                </p>
-
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <button
-                    type="button"
-                    onClick={() => openScheduleModal('winter_7')}
-                    className="py-3 px-6 rounded-full font-black text-xs transition-all cursor-pointer border-2 border-[#C7230F] bg-white text-[#C7230F] hover:bg-[#C7230F] hover:text-[#FFFFEF] uppercase tracking-wider inline-flex items-center gap-2"
-                  >
-                    <Calendar size={14} />
-                    <span>View Winter Schedule</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSubscribe(planCards[0])}
-                    className="py-3 px-7 rounded-full font-black text-xs transition-all cursor-pointer border-none bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] uppercase tracking-wider inline-flex items-center gap-2 shadow-md"
-                  >
-                    <ShoppingBag size={14} />
-                    <span>Subscribe Winter Plan — Rs 4,400</span>
-                  </button>
-                </div>
+                <span className="bg-[#FFFFEF] text-[#C7230F] border-2 border-[#C7230F] font-black text-sm px-4 py-1 rounded-full">
+                  Rs 4,400 / Full Week
+                </span>
               </div>
 
-              {/* Winter Add-On: Chicken Corn Soup (Rs 500) */}
-              <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/25 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden border border-[#C7230F]/20 shrink-0 bg-white">
-                    <Image
-                      src="/items/chicken-corn-soup.jpg"
-                      alt="Chicken Corn Soup"
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                      <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">
-                        WINTER SOUP ADD-ON
-                      </span>
-                      <span className="text-xs font-black text-[#C7230F]">Rs 500</span>
-                    </div>
-                    <h3 className="font-extrabold text-base sm:text-lg text-[#C7230F]">
-                      Hot Chicken Corn Soup
-                    </h3>
-                    <p className="text-xs text-[#C7230F]/75 font-semibold">
-                      Slow-simmered shredded halal chicken, sweet corn & egg ribbons — available daily!
-                    </p>
-                  </div>
-                </div>
+              <h2 className="text-2xl sm:text-4xl font-black text-[#C7230F] leading-tight mb-2">
+                7-Day Winter Desi Meal Plan — Rs 4,400
+              </h2>
+              <p className="text-xs sm:text-sm text-[#C7230F]/80 font-semibold leading-relaxed mb-5 max-w-3xl">
+                Enjoy a heartwarming 7-day rotation of our richest traditional winter dishes cooked fresh every morning with 100% Halal meat and pure home-style spices:
+              </p>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                {[
+                  { day: 'Monday', dish: 'Chicken Karahi', img: '/items/chicken-karahi.jpg', tag: 'Wok Karahi' },
+                  { day: 'Tuesday', dish: 'Kofta Curry', img: '/items/kofta-curry.jpg', tag: 'Rich Gravy' },
+                  { day: 'Wednesday', dish: 'Matar Qeema', img: '/items/matar-qeema.jpg', tag: 'Home Style' },
+                  { day: 'Thursday', dish: 'Chicken Makhni Handi', img: '/items/makhni-handi.jpg', tag: 'Clay Handi' },
+                  { day: 'Friday', dish: 'Chicken Biryani', img: '/items/chicken-biryani.jpg', tag: 'Friday Feast' },
+                  { day: 'Saturday', dish: 'Chicken Korma', img: '/items/chicken-korma.jpg', tag: 'Royal Korma' },
+                  { day: 'Sunday', dish: 'Beef Nihari', img: '/items/beef-nihari.jpg', tag: 'Sunday Special' },
+                ].map((d) => (
+                  <div
+                    key={d.day}
+                    className="bg-[#FFFFEF] border border-[#C7230F]/20 rounded-2xl p-3 flex items-center gap-3"
+                  >
+                    <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-[#C7230F]/20 shrink-0 bg-white">
+                      <Image
+                        src={d.img}
+                        alt={d.dish}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="inline-block bg-[#C7230F] text-[#FFFFEF] text-[9px] font-black px-2 py-0.5 rounded-md uppercase mb-0.5">
+                        {d.day}
+                      </span>
+                      <div className="font-extrabold text-xs sm:text-sm text-[#C7230F] truncate">{d.dish}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex flex-wrap gap-3">
                 <button
                   type="button"
-                  onClick={handleOrderSoup}
-                  className="shrink-0 w-full sm:w-auto py-3 px-5 rounded-full font-black text-xs transition-all cursor-pointer border-none bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-sm"
+                  onClick={() => openScheduleModal('winter_7')}
+                  className="py-3 px-6 rounded-full font-black text-xs transition-all cursor-pointer border-2 border-[#C7230F] bg-white text-[#C7230F] hover:bg-[#C7230F] hover:text-[#FFFFEF] uppercase tracking-wider inline-flex items-center gap-2"
+                >
+                  <Calendar size={14} />
+                  <span>View Winter Schedule</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSubscribe(planCards[0])}
+                  className="py-3 px-7 rounded-full font-black text-xs transition-all cursor-pointer border-none bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] uppercase tracking-wider inline-flex items-center gap-2 shadow-md"
                 >
                   <ShoppingBag size={14} />
-                  <span>Add Soup — Rs 500</span>
+                  <span>Subscribe Winter Plan — Rs 4,400</span>
                 </button>
               </div>
+            </div>
+
+            {/* Winter Add-On: Chicken Corn Soup (Rs 500) */}
+            <div className="bg-[#FFFFEF] border-2 border-[#C7230F]/25 rounded-3xl p-4 sm:p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="relative w-16 h-16 rounded-2xl overflow-hidden border border-[#C7230F]/20 shrink-0 bg-white">
+                  <Image
+                    src="/items/chicken-corn-soup.jpg"
+                    alt="Chicken Corn Soup"
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <span className="bg-[#C7230F] text-[#FFFFEF] text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">
+                      WINTER SOUP ADD-ON
+                    </span>
+                    <span className="text-xs font-black text-[#C7230F]">Rs 500</span>
+                  </div>
+                  <h3 className="font-extrabold text-base sm:text-lg text-[#C7230F]">
+                    Hot Chicken Corn Soup
+                  </h3>
+                  <p className="text-xs text-[#C7230F]/75 font-semibold">
+                    Slow-simmered shredded halal chicken, sweet corn & egg ribbons — available daily!
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleOrderSoup}
+                className="shrink-0 w-full sm:w-auto py-3 px-5 rounded-full font-black text-xs transition-all cursor-pointer border-none bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] uppercase tracking-wider inline-flex items-center justify-center gap-2 shadow-sm"
+              >
+                <ShoppingBag size={14} />
+                <span>Add Soup — Rs 500</span>
+              </button>
             </div>
           </div>
         </div>
