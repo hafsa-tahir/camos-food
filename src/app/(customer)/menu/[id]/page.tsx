@@ -204,9 +204,9 @@ export default function ProductPage() {
               <span className="text-xs font-black text-[#C7230F] tracking-widest uppercase flex items-center gap-1.5">
                 <Sparkles size={14} /> CAMO'S KITCHEN · {item.category}
               </span>
-              {item.tags && item.tags.length > 0 && (
+              {item.tags && item.tags.filter((t) => !t.includes(':')).length > 0 && (
                 <span className="text-[11px] font-extrabold text-[#C7230F] bg-white border border-[#C7230F]/20 px-3 py-1 rounded-md uppercase tracking-wider">
-                  ✦ {item.tags[0]}
+                  ✦ {item.tags.filter((t) => !t.includes(':'))[0]}
                 </span>
               )}
             </div>

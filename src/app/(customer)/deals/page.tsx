@@ -22,7 +22,7 @@ import {
 import { toast } from 'sonner'
 import { useCartStore } from '@/store/cartStore'
 
-type ActivePlanId = 'winter_7' | 'diet_5' | 'diet_7' | 'desi_5' | 'desi_7_chicken' | 'desi_7_beef'
+type ActivePlanId = string
 
 interface MealDay {
   day: string
@@ -41,6 +41,8 @@ interface SubscriptionPlanCard {
   priceFormatted: string
   subtitle: string
   highlights: string[]
+  customDays?: MealDay[]
+  image_url?: string
 }
 
 export default function DealsPage() {
@@ -50,6 +52,45 @@ export default function DealsPage() {
   const [activePlanId, setActivePlanId] = useState<ActivePlanId>('winter_7')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [fridayChoice, setFridayChoice] = useState<'tacos' | 'bowl'>('tacos')
+  const [dbCustomPlans, setDbCustomPlans] = useState<SubscriptionPlanCard[]>([])
+
+  useEffect(() => {
+    fetch('/api/menu')
+      .then((r) => r.json())
+      .then(({ data }) => {
+        if (data?.plans && Array.isArray(data.plans)) {
+          const parsedPlans: SubscriptionPlanCard[] = []
+          for (const p of data.plans) {
+            if (p.status === 'inactive') continue
+            const tags: string[] = Array.isArray(p.tags) ? p.tags : []
+            const metaTag = tags.find((t) => t.startsWith('plan_meta:'))
+            if (metaTag) {
+              try {
+                const meta = JSON.parse(metaTag.slice(10))
+                parsedPlans.push({
+                  id: p.id,
+                  category: meta.category === 'diet' ? 'diet' : 'desi',
+                  title: p.name,
+                  badge: meta.badge || 'Weekly Subscription',
+                  daysCount: Number(meta.daysCount) || (Array.isArray(meta.days) ? meta.days.length : 7),
+                  price: Number(p.price) || 3500,
+                  priceFormatted: `Rs ${Number(p.price || 3500).toLocaleString()}`,
+                  subtitle: meta.subtitle || 'Weekly Home-Cooked Plan',
+                  highlights:
+                    Array.isArray(meta.highlights) && meta.highlights.length > 0
+                      ? meta.highlights
+                      : ['100% Halal & Freshly Cooked', 'Daily Doorstep Delivery'],
+                  customDays: Array.isArray(meta.days) ? meta.days : undefined,
+                  image_url: p.image_url,
+                })
+              } catch {}
+            }
+          }
+          setDbCustomPlans(parsedPlans)
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   // Close modal on Escape key press and prevent background scrolling
   useEffect(() => {
@@ -68,7 +109,7 @@ export default function DealsPage() {
     }
   }, [isModalOpen])
 
-  const planCards: SubscriptionPlanCard[] = [
+  const defaultPlanCards: SubscriptionPlanCard[] = [
     {
       id: 'winter_7',
       category: 'desi',
@@ -137,6 +178,18 @@ export default function DealsPage() {
     },
   ]
 
+  // Merge DB custom/edited plans with default plans
+  const overriddenTitles = new Set(dbCustomPlans.map((p) => p.title.toLowerCase()))
+  const planCards: SubscriptionPlanCard[] = [
+    ...defaultPlanCards.map((def) => {
+      const dbOverride = dbCustomPlans.find((c) => c.title.toLowerCase() === def.title.toLowerCase())
+      return dbOverride ? { ...def, ...dbOverride, id: def.id } : def
+    }),
+    ...dbCustomPlans.filter(
+      (c) => !defaultPlanCards.some((def) => def.title.toLowerCase() === c.title.toLowerCase())
+    ),
+  ]
+
   const winter7Days: MealDay[] = [
     { day: 'Monday', title: 'Chicken Karahi', desc: 'Authentic wok-cooked chicken karahi with tomatoes, fresh ginger & green chillies', tag: 'Winter Monday' },
     { day: 'Tuesday', title: 'Kofta Curry', desc: 'Juicy hand-rolled spiced meatballs simmered in rich traditional curry gravy', tag: 'Winter Favorite' },
@@ -181,7 +234,9 @@ export default function DealsPage() {
 
   const selectedPlan = planCards.find((p) => p.id === activePlanId) || planCards[0]
   const currentMeals =
-    activePlanId === 'winter_7'
+    selectedPlan?.customDays && selectedPlan.customDays.length > 0
+      ? selectedPlan.customDays
+      : activePlanId === 'winter_7'
       ? winter7Days
       : activePlanId === 'diet_5'
       ? diet5Days
@@ -387,7 +442,7 @@ export default function DealsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {planCards.slice(0, 5).map((plan) => {
+            {planCards.filter((p) => p.id !== 'desi_7_beef').map((plan) => {
               const isSelected =
                 activePlanId === plan.id ||
                 (plan.id === 'desi_7_chicken' && activePlanId === 'desi_7_beef')

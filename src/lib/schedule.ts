@@ -221,12 +221,71 @@ export interface DishAvailability {
  * Calculates dynamic availability for a dish on a specific day (defaults to Pakistan today)
  */
 export function getDishAvailability(
-  item: { id?: string; name?: string; category?: string; status?: string },
+  item: { id?: string; name?: string; category?: string; status?: string; tags?: string[] },
   currentDay: DayOfWeek = getPakistanDayOfWeek()
 ): DishAvailability {
   const category = (item.category || '').toLowerCase()
   const nameLower = (item.name || '').toLowerCase()
   const idLower = (item.id || '').toLowerCase()
+  const tags = Array.isArray(item.tags) ? item.tags : []
+
+  // 0. Check Admin-Configured Availability Tags first (set via Admin Dashboard)
+  const hasEverydayTag = tags.some(
+    (t) => t.toLowerCase() === 'avail:everyday' || t.toLowerCase() === 'available-everyday'
+  )
+  if (hasEverydayTag) {
+    return {
+      isAvailableToday: true,
+      isBreakfast: true,
+      isSpecialToday: false,
+      statusLabel: 'Available Today',
+      badgeLabel: category === 'breakfast' ? 'Daily Breakfast' : 'Available Daily',
+    }
+  }
+
+  const availDayTags = tags
+    .filter((t) => t.toLowerCase().startsWith('avail:'))
+    .map((t) => t.slice(6).trim())
+    .filter((d) =>
+      ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(d)
+    ) as DayOfWeek[]
+
+  if (availDayTags.length > 0) {
+    const slotTag = tags.find((t) => t.toLowerCase().startsWith('slot:'))?.slice(5).toLowerCase() as
+      | 'desi'
+      | 'diet'
+      | 'winter'
+      | undefined
+    if (availDayTags.includes(currentDay)) {
+      const badge =
+        slotTag === 'diet'
+          ? "Today's Diet Special"
+          : slotTag === 'winter'
+          ? "Today's Winter Special"
+          : slotTag === 'desi'
+          ? "Today's Desi Special"
+          : "Today's Special"
+      return {
+        isAvailableToday: true,
+        isBreakfast: false,
+        isSpecialToday: true,
+        specialType: slotTag || 'desi',
+        cookedOnDay: currentDay,
+        statusLabel: `Available Today (${badge})`,
+        badgeLabel: badge,
+      }
+    } else {
+      const targetDay = availDayTags[0]
+      return {
+        isAvailableToday: false,
+        isBreakfast: false,
+        isSpecialToday: false,
+        cookedOnDay: targetDay,
+        statusLabel: `Available on ${targetDay}`,
+        badgeLabel: `Cooked on ${targetDay}`,
+      }
+    }
+  }
 
   // 1. Breakfast is ALWAYS available every single day
   if (

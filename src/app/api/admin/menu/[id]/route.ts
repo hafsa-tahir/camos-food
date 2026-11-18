@@ -44,11 +44,13 @@ export async function PATCH(
       return NextResponse.json({ data, message: 'Item updated' })
     } else {
       // Find DB item by name or slug
-      const formattedName = id.replace(/-/g, ' ')
+      const slugWithoutPrefix = id.replace(/^camos-/i, '').replace(/-/g, ' ')
+      const targetName = parsed.name || slugWithoutPrefix
       const { data: existing } = await supabase
         .from('food_items')
         .select('*')
-        .ilike('name', formattedName)
+        .or(`name.ilike.${targetName},name.ilike.%${slugWithoutPrefix}%`)
+        .limit(1)
         .maybeSingle()
 
       if (existing) {
@@ -61,22 +63,34 @@ export async function PATCH(
 
         return NextResponse.json({ data: updated, message: 'Item updated' })
       } else {
-        // Insert new item with updated status
+        const { REAL_MENU_ITEMS, WINTER_PLAN_DISHES } = await import('@/lib/menuData')
+        const baseline = [...REAL_MENU_ITEMS, ...WINTER_PLAN_DISHES].find(
+          (b) => b.id.toLowerCase() === id.toLowerCase() || b.name.toLowerCase() === targetName.toLowerCase()
+        )
+
+        // Insert new item in Supabase overriding baseline
         const { data: inserted, error: insErr } = await supabase
           .from('food_items')
           .insert({
-            name: formattedName.replace(/\b\w/g, (l) => l.toUpperCase()),
-            price: parsed.price || 550,
-            calories: parsed.calories || 500,
+            name: parsed.name || baseline?.name || slugWithoutPrefix.replace(/\b\w/g, (l) => l.toUpperCase()),
+            description: parsed.description ?? baseline?.description ?? '',
+            price: parsed.price ?? baseline?.price ?? 550,
+            calories: parsed.calories ?? baseline?.calories ?? 500,
+            protein_g: parsed.protein_g ?? baseline?.protein_g ?? 30,
+            carbs_g: parsed.carbs_g ?? baseline?.carbs_g ?? 50,
+            fat_g: parsed.fat_g ?? baseline?.fat_g ?? 18,
+            tags: parsed.tags ?? baseline?.tags ?? ['halal'],
+            image_url: parsed.image_url ?? baseline?.image_url ?? '/hero-plate.jpg',
             status: parsed.status || 'active',
-            category: parsed.category || 'main',
-            ...parsed,
+            category: parsed.category || baseline?.category || 'main',
+            is_featured: parsed.is_featured ?? baseline?.is_featured ?? true,
+            sort_order: parsed.sort_order ?? baseline?.sort_order ?? 10,
           })
           .select()
           .single()
 
         if (insErr) return NextResponse.json({ error: insErr.message }, { status: 400 })
-        return NextResponse.json({ data: inserted, message: 'Item updated' })
+        return NextResponse.json({ data: inserted, message: 'Item saved to Supabase' })
       }
     }
   } catch (err) {

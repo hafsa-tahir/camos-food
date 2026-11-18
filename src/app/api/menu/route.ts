@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { REAL_MENU_ITEMS, enrichFoodItem } from '@/lib/menuData'
 
-export const revalidate = 60
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   const supabase = await createServiceClient()
@@ -46,6 +46,11 @@ export async function GET(request: NextRequest) {
 
   const { data: dbItems, error } = await query
 
+  // Extract subscription plans from dbItems so Deals page can dynamically display admin-created weekly menus
+  const dbPlans = (dbItems || []).filter(
+    (i) => i.category === 'subscription' || i.name?.toLowerCase().includes('plan') || i.tags?.includes('subscription')
+  )
+
   // Merge DB items with REAL_MENU_ITEMS baseline.
   // DB items (including inactive/out-of-stock ones) ALWAYS override local items!
   const dbNames = new Set((dbItems || []).map((i) => i.name.toLowerCase()))
@@ -79,10 +84,10 @@ export async function GET(request: NextRequest) {
     .or('ends_at.is.null,ends_at.gt.now()')
 
   return NextResponse.json(
-    { data: { items, deals: deals || [] } },
+    { data: { items, plans: dbPlans, deals: deals || [] } },
     {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        'Cache-Control': 'no-store, max-age=0',
       },
     }
   )

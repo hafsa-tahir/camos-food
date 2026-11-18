@@ -544,17 +544,38 @@ export function enrichFoodItem(rawItem: any): FoodItem {
     }
   }
 
+  const rawTags: string[] = Array.isArray(rawItem.tags) ? rawItem.tags : []
+  const servingTag = rawTags.find((t) => t.startsWith('serving:'))?.slice(8)
+  const ingTag = rawTags.find((t) => t.startsWith('ing:'))?.slice(4)
+  const allgTag = rawTags.find((t) => t.startsWith('allg:'))?.slice(5)
+  const varTag = rawTags.find((t) => t.startsWith('var:'))?.slice(4)
+
+  const parsedIngredients = ingTag ? ingTag.split('|').map((s) => s.trim()).filter(Boolean) : []
+  const parsedAllergens = allgTag ? allgTag.split('|').map((s) => s.trim()).filter(Boolean) : []
+  const parsedVariants = varTag
+    ? varTag
+        .split('|')
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((name) => ({ name }))
+    : undefined
+
   const ingredients =
-    Array.isArray(rawItem.ingredients) && rawItem.ingredients.length > 0
+    parsedIngredients.length > 0
+      ? parsedIngredients
+      : Array.isArray(rawItem.ingredients) && rawItem.ingredients.length > 0
       ? rawItem.ingredients
       : matched?.ingredients || getDefaultIngredients(rawItem.name || matched?.name || '', category)
 
   const allergens =
-    Array.isArray(rawItem.allergens) && rawItem.allergens.length > 0
+    parsedAllergens.length > 0
+      ? parsedAllergens
+      : Array.isArray(rawItem.allergens) && rawItem.allergens.length > 0
       ? rawItem.allergens
       : matched?.allergens || getDefaultAllergens(rawItem.name || matched?.name || '')
 
-  const serving_size = rawItem.serving_size || matched?.serving_size || '1 Serving (approx. 400g)'
+  const serving_size = servingTag || rawItem.serving_size || matched?.serving_size || '1 Serving (approx. 400g)'
+  const variants = parsedVariants || rawItem.variants || matched?.variants
 
   return {
     ...matched,
@@ -573,7 +594,7 @@ export function enrichFoodItem(rawItem: any): FoodItem {
     status: rawItem.status || matched?.status || 'active',
     is_featured: rawItem.is_featured ?? matched?.is_featured ?? true,
     sort_order: rawItem.sort_order ?? matched?.sort_order ?? 99,
-    variants: rawItem.variants || matched?.variants,
+    variants,
     ingredients,
     allergens,
     serving_size,
