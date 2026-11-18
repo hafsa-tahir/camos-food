@@ -586,6 +586,71 @@ export default function AdminDashboardPage() {
     }
   }
 
+  // Reset All Order Amounts / Revenue to PKR 0 in Supabase
+  const resetAllRevenueAmounts = async () => {
+    if (!confirm('Are you sure you want to reset all revenue & order amounts in Admin to PKR 0?')) return
+    try {
+      const res = await fetch('/api/admin/orders?action=reset_amounts', {
+        method: 'DELETE',
+      }).then((r) => r.json())
+
+      if (res.message) {
+        toast.success('All revenue and order amounts have been reset to PKR 0!')
+        setOrders((prev) =>
+          prev.map((o) => ({
+            ...o,
+            subtotal: 0,
+            discount_amount: 0,
+            total: 0,
+            order_items: (o.order_items || []).map((it) => ({ ...it, price_at_order: 0 })),
+          }))
+        )
+      } else {
+        toast.error(res.error || 'Failed to reset amounts')
+      }
+    } catch {
+      toast.error('Error resetting amounts')
+    }
+  }
+
+  // Clear All Order History from Supabase
+  const clearAllOrderHistory = async () => {
+    if (!confirm('Are you sure you want to permanently clear ALL order history from the Admin Dashboard and Supabase?')) return
+    try {
+      const res = await fetch('/api/admin/orders?action=clear_all', {
+        method: 'DELETE',
+      }).then((r) => r.json())
+
+      if (res.message) {
+        toast.success('All order history cleared!')
+        setOrders([])
+      } else {
+        toast.error(res.error || 'Failed to clear order history')
+      }
+    } catch {
+      toast.error('Error clearing order history')
+    }
+  }
+
+  // Delete a Single Order
+  const deleteSingleOrder = async (orderId: string) => {
+    if (!confirm(`Delete Order #${orderId.slice(0, 8)}?`)) return
+    try {
+      const res = await fetch(`/api/admin/orders?id=${orderId}`, {
+        method: 'DELETE',
+      }).then((r) => r.json())
+
+      if (res.message) {
+        toast.success(`Deleted Order #${orderId.slice(0, 8)}`)
+        setOrders((prev) => prev.filter((o) => o.id !== orderId))
+      } else {
+        toast.error(res.error || 'Failed to delete order')
+      }
+    } catch {
+      toast.error('Error deleting order')
+    }
+  }
+
   // Create or Update Food Item in Supabase
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -909,24 +974,44 @@ export default function AdminDashboardPage() {
 
         {/* Analytics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div style={{ backgroundColor: '#FFFFFF', borderColor: 'rgba(199,35,15,0.25)' }} className="p-5 rounded-3xl border-2 shadow-xs flex items-center gap-4">
-            <div style={{ backgroundColor: 'rgba(199,35,15,0.1)', color: '#C7230F' }} className="w-12 h-12 rounded-2xl flex items-center justify-center font-black">
-              <DollarSign size={24} />
+          <div style={{ backgroundColor: '#FFFFFF', borderColor: 'rgba(199,35,15,0.25)' }} className="p-5 rounded-3xl border-2 shadow-xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <div style={{ backgroundColor: 'rgba(199,35,15,0.1)', color: '#C7230F' }} className="w-12 h-12 rounded-2xl flex items-center justify-center font-black shrink-0">
+                <DollarSign size={24} />
+              </div>
+              <div>
+                <div style={{ color: '#C7230F' }} className="text-xs font-bold uppercase tracking-wider opacity-70">Total Revenue</div>
+                <div style={{ color: '#C7230F' }} className="font-serif font-black text-xl">PKR {totalRevenue.toLocaleString()}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ color: '#C7230F' }} className="text-xs font-bold uppercase tracking-wider opacity-70">Total Revenue</div>
-              <div style={{ color: '#C7230F' }} className="font-serif font-black text-xl">PKR {totalRevenue.toLocaleString()}</div>
-            </div>
+            <button
+              type="button"
+              onClick={resetAllRevenueAmounts}
+              title="Reset all revenue & order amounts to PKR 0"
+              className="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-[#C7230F] border border-[#C7230F]/30 font-black text-[10px] uppercase tracking-wider cursor-pointer shrink-0 transition-colors"
+            >
+              Reset PKR 0
+            </button>
           </div>
 
-          <div style={{ backgroundColor: '#FFFFFF', borderColor: 'rgba(199,35,15,0.25)' }} className="p-5 rounded-3xl border-2 shadow-xs flex items-center gap-4">
-            <div style={{ backgroundColor: 'rgba(199,35,15,0.1)', color: '#C7230F' }} className="w-12 h-12 rounded-2xl flex items-center justify-center font-black">
-              <ShoppingBag size={24} />
+          <div style={{ backgroundColor: '#FFFFFF', borderColor: 'rgba(199,35,15,0.25)' }} className="p-5 rounded-3xl border-2 shadow-xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-4">
+              <div style={{ backgroundColor: 'rgba(199,35,15,0.1)', color: '#C7230F' }} className="w-12 h-12 rounded-2xl flex items-center justify-center font-black shrink-0">
+                <ShoppingBag size={24} />
+              </div>
+              <div>
+                <div style={{ color: '#C7230F' }} className="text-xs font-bold uppercase tracking-wider opacity-70">Total Orders</div>
+                <div style={{ color: '#C7230F' }} className="font-serif font-black text-xl">{orders.length}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ color: '#C7230F' }} className="text-xs font-bold uppercase tracking-wider opacity-70">Total Orders</div>
-              <div style={{ color: '#C7230F' }} className="font-serif font-black text-xl">{orders.length}</div>
-            </div>
+            <button
+              type="button"
+              onClick={clearAllOrderHistory}
+              title="Clear all order history"
+              className="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-[#C7230F] border border-[#C7230F]/30 font-black text-[10px] uppercase tracking-wider cursor-pointer shrink-0 transition-colors"
+            >
+              Clear All
+            </button>
           </div>
 
           <div style={{ backgroundColor: '#FFFFFF', borderColor: 'rgba(199,35,15,0.25)' }} className="p-5 rounded-3xl border-2 shadow-xs flex items-center gap-4">
@@ -996,6 +1081,25 @@ export default function AdminDashboardPage() {
                     {st}
                   </button>
                 ))}
+              </div>
+
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={resetAllRevenueAmounts}
+                  className="px-4 py-2 rounded-xl bg-white hover:bg-red-50 text-[#C7230F] border-2 border-[#C7230F]/30 font-black text-xs uppercase tracking-wider cursor-pointer flex items-center gap-1.5 transition-colors"
+                >
+                  <DollarSign size={14} />
+                  <span>Reset All Amounts to 0</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={clearAllOrderHistory}
+                  className="px-4 py-2 rounded-xl bg-[#C7230F] hover:bg-[#A31C0C] text-[#FFFFEF] border-none font-black text-xs uppercase tracking-wider cursor-pointer flex items-center gap-1.5 shadow-sm transition-colors"
+                >
+                  <Trash2 size={14} />
+                  <span>Clear All Order History</span>
+                </button>
               </div>
             </div>
 
@@ -1107,24 +1211,35 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    {/* Quick Status Change Buttons */}
-                    <div className="pt-4 border-t border-[#C7230F]/15 flex flex-wrap gap-2 items-center justify-end">
-                      <span style={{ color: '#C7230F' }} className="text-xs font-black uppercase tracking-wider mr-2">Update Status:</span>
-                      {['confirmed', 'preparing', 'delivered', 'cancelled'].map((st) => (
-                        <button
-                          key={st}
-                          onClick={() => updateOrderStatus(o.id, st)}
-                          disabled={o.status === st}
-                          style={{
-                            backgroundColor: o.status === st ? '#C7230F' : '#FFFFEF',
-                            color: o.status === st ? '#FFFFEF' : '#C7230F',
-                            borderColor: '#C7230F',
-                          }}
-                          className="px-3.5 py-1.5 rounded-xl border font-black text-[11px] uppercase tracking-wider cursor-pointer hover:bg-[#C7230F] hover:text-[#FFFFEF] transition-all disabled:opacity-40"
-                        >
-                          Mark {st}
-                        </button>
-                      ))}
+                    {/* Quick Status Change & Delete Buttons */}
+                    <div className="pt-4 border-t border-[#C7230F]/15 flex flex-wrap gap-2 items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => deleteSingleOrder(o.id)}
+                        className="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-black text-[11px] uppercase tracking-wider cursor-pointer flex items-center gap-1.5 transition-colors"
+                      >
+                        <Trash2 size={13} />
+                        <span>Delete Order</span>
+                      </button>
+
+                      <div className="flex flex-wrap gap-2 items-center">
+                        <span style={{ color: '#C7230F' }} className="text-xs font-black uppercase tracking-wider mr-1">Update Status:</span>
+                        {['confirmed', 'preparing', 'delivered', 'cancelled'].map((st) => (
+                          <button
+                            key={st}
+                            onClick={() => updateOrderStatus(o.id, st)}
+                            disabled={o.status === st}
+                            style={{
+                              backgroundColor: o.status === st ? '#C7230F' : '#FFFFEF',
+                              color: o.status === st ? '#FFFFEF' : '#C7230F',
+                              borderColor: '#C7230F',
+                            }}
+                            className="px-3.5 py-1.5 rounded-xl border font-black text-[11px] uppercase tracking-wider cursor-pointer hover:bg-[#C7230F] hover:text-[#FFFFEF] transition-all disabled:opacity-40"
+                          >
+                            Mark {st}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}
